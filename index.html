@@ -1,0 +1,1543 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Fasmie Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: aubergine header band + Home dashboard of cards; tabs on top for desktop, thumb bar at the bottom on phones; the wide month sheet scrolls inside its own frame */
+:root{
+  --bg:#f6f3f8; --surface:#ffffff; --sunk:#efeaf4; --line:#e3dceb;
+  --ink:#2b2140; --muted:#73688a;
+  --plum:#33244f; --plum-2:#46336c; --on-plum:#ffffff; --on-plum-2:#cfc3e6;
+  --accent:#d2457a; --accent-soft:#fbe6ee; --accent-ink:#ffffff;
+  --violet:#7a5bc7; --violet-soft:#ece5fa;
+  --good:#2f8f6b; --good-soft:#e1f3ea;
+  --warn:#a8691a; --warn-soft:#fcefd6;
+  --bad:#c2362b; --bad-soft:#fbe3e0; --zero:#bdb4ca;
+  --start:#fff6e3; --add:#e1f3ea; --add-ink:#2f8f6b; --sold:#fbe6ee;
+  --shadow:0 1px 2px rgba(43,33,64,.06),0 4px 14px rgba(43,33,64,.06);
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15111c; --surface:#1e1828; --sunk:#282133; --line:#372e45;
+  --ink:#f2eef7; --muted:#a99fbc;
+  --plum:#241a36; --plum-2:#352850; --on-plum:#ffffff; --on-plum-2:#c2b6da;
+  --accent:#ff7aa8; --accent-soft:#43192d; --accent-ink:#2a0716;
+  --violet:#a88bff; --violet-soft:#2c2346;
+  --good:#63d1a2; --good-soft:#173327; --warn:#f0b85a; --warn-soft:#3a2c12;
+  --bad:#ff8a80; --bad-soft:#3f1a17; --zero:#5d5370;
+  --start:#35301a; --add:#173327; --add-ink:#63d1a2; --sold:#43192d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15111c; --surface:#1e1828; --sunk:#282133; --line:#372e45;
+  --ink:#f2eef7; --muted:#a99fbc;
+  --plum:#241a36; --plum-2:#352850; --on-plum:#ffffff; --on-plum-2:#c2b6da;
+  --accent:#ff7aa8; --accent-soft:#43192d; --accent-ink:#2a0716;
+  --violet:#a88bff; --violet-soft:#2c2346;
+  --good:#63d1a2; --good-soft:#173327; --warn:#f0b85a; --warn-soft:#3a2c12;
+  --bad:#ff8a80; --bad-soft:#3f1a17; --zero:#5d5370;
+  --start:#35301a; --add:#173327; --add-ink:#63d1a2; --sold:#43192d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--plum)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header: phone = top bar + bottom tabs; tablet = top bar + tab row; desktop = left sidebar */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;background:var(--plum);color:var(--on-plum)}
+.hwrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding-block:12px 0}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;order:1;margin-right:auto}
+.logo{width:38px;height:38px;border-radius:11px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:1.2rem;flex:none}
+.brand b{display:block;font-family:var(--f-display);font-weight:800;font-size:1.22rem;letter-spacing:-.02em;line-height:1.1}
+.who{font-size:.76rem;color:var(--on-plum-2);display:flex;align-items:center;gap:6px}
+.who img{width:16px;height:16px;border-radius:50%}
+.month{order:2;display:flex;align-items:center;gap:4px;background:var(--plum-2);border-radius:12px;padding:3px}
+.month button{all:unset;cursor:pointer;width:32px;height:32px;border-radius:9px;text-align:center;line-height:32px;font-weight:800;color:var(--on-plum)}
+.month button:hover{background:rgba(255,255,255,.1)}
+.month button:focus-visible{outline:2px solid var(--accent)}
+.month b{font-family:var(--f-display);font-weight:700;min-width:118px;text-align:center;font-size:.95rem}
+.hfoot{order:3}
+.hbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.85rem;padding:9px 12px;border-radius:10px;background:var(--plum-2);color:var(--on-plum)}
+.hbtn:hover{background:rgba(255,255,255,.14)}
+.hbtn:focus-visible{outline:2px solid var(--accent)}
+.hbtn svg{width:16px;height:16px;flex:none}
+nav#tabs{order:4;flex-basis:100%;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-top:4px}
+.navlabel{display:none}
+nav#tabs button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 14px 12px;font-weight:600;font-size:.92rem;color:var(--on-plum-2);border-radius:12px 12px 0 0;white-space:nowrap}
+nav#tabs button svg{width:18px;height:18px;flex:none}
+nav#tabs button:hover{color:var(--on-plum)}
+nav#tabs button[aria-selected="true"]{background:var(--bg);color:var(--ink)}
+nav#tabs button[aria-selected="true"] svg{color:var(--accent)}
+nav#tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (max-width:720px){
+  .hwrap{padding-block:10px}
+  .brand b{font-size:1.08rem}
+  .who{display:none}
+  .hbtn span{display:none}
+  .month b{min-width:92px;font-size:.86rem}
+  nav#tabs{position:fixed;left:0;right:0;bottom:0;z-index:9;margin:0;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(43,33,64,.08);justify-content:space-around;gap:0;padding:4px max(6px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  nav#tabs button{flex-direction:column;gap:2px;padding:6px 4px;font-size:.68rem;color:var(--muted);border-radius:10px;flex:1;justify-content:center;text-align:center}
+  nav#tabs button svg{width:22px;height:22px}
+  nav#tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+  nav#tabs button.desk{display:none}
+  main{padding-bottom:110px!important}
+}
+@media (min-width:1024px){
+  body{padding-left:248px}
+  body::before{width:248px;right:auto}
+  header{position:fixed;left:0;top:0;bottom:0;width:248px;padding-top:env(safe-area-inset-top,0px);overflow-y:auto}
+  .hwrap{flex-direction:column;flex-wrap:nowrap;align-items:stretch;height:100%;gap:16px;padding:22px max(16px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px)) 16px;max-width:none}
+  .brand{order:1;margin:0 0 4px 4px}
+  .month{order:2;justify-content:space-between}
+  nav#tabs{order:3;flex-direction:column;gap:3px;overflow:visible;margin:0;flex-basis:auto}
+  .navlabel{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--on-plum-2);opacity:.75;padding:12px 12px 4px}
+  nav#tabs button{border-radius:11px;padding:11px 12px;font-size:.95rem;position:relative}
+  nav#tabs button:hover{background:rgba(255,255,255,.07)}
+  nav#tabs button[aria-selected="true"]{background:rgba(255,255,255,.12);color:var(--on-plum)}
+  nav#tabs button[aria-selected="true"]::before{content:"";position:absolute;left:-16px;top:8px;bottom:8px;width:4px;border-radius:0 4px 4px 0;background:var(--accent)}
+  .hfoot{order:4;margin-top:auto}
+  .hbtn{width:100%;justify-content:center;box-sizing:border-box;padding:11px 12px}
+}
+main{padding-block:20px 70px}
+h1,h2,h3{font-family:var(--f-display);margin:0;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:1.7rem;font-weight:800}
+h2{font-size:1.35rem;font-weight:800} h3{font-size:1.02rem;font-weight:700}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:18px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0;box-shadow:var(--shadow)}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
+.link{all:unset;cursor:pointer;color:var(--accent);font-weight:700;font-size:.85rem}
+.link:focus-visible{outline:2px solid var(--accent);border-radius:4px}
+.banner{padding:12px 16px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-weight:600;margin-bottom:14px}
+.banner[data-tone="bad"]{background:var(--bad-soft);color:var(--bad)}
+input,select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
+input:focus,select:focus{outline:2px solid var(--violet);outline-offset:0;border-color:transparent}
+.btn{font:inherit;font-weight:700;font-size:.92rem;border:0;border-radius:11px;padding:10px 18px;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.05)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:6px 11px;font-size:.82rem}
+.btn.danger{background:var(--bad);color:var(--surface)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.seg{display:inline-flex;background:var(--sunk);border-radius:11px;padding:3px}
+.seg button{all:unset;cursor:pointer;padding:7px 14px;border-radius:9px;font-weight:700;font-size:.88rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.seg button:focus-visible{outline:2px solid var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}
+.tile{padding:14px 16px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:3px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tone,var(--violet))}
+.tile .v{font-family:var(--f-num);font-size:1.2rem;font-weight:600}
+.tile .sub{font-size:.76rem;color:var(--muted)}
+.tile.hero{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tile.hero::before{display:none}
+.tile.hero .eyebrow{color:inherit;opacity:.85}
+.pic{display:block;object-fit:cover;background:var(--sunk);border-radius:10px}
+.no{font-family:var(--f-display);font-weight:800;color:var(--accent)}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+.msg{font-size:.88rem;font-weight:600;min-height:1.2em}
+.msg.ok{color:var(--good)} .msg.err{color:var(--bad)}
+
+/* HOME */
+.hello{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.hero{background:var(--plum);color:var(--on-plum);border-radius:20px;padding:22px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:var(--accent);opacity:.18}
+.hero .eyebrow{color:var(--on-plum-2)}
+.hero .big{font-family:var(--f-num);font-size:clamp(1.9rem,6vw,2.8rem);font-weight:600;letter-spacing:-.02em;line-height:1.1;margin-top:4px}
+.hero .note{color:var(--on-plum-2);font-size:.88rem;margin-top:6px}
+.flow{display:flex;flex-direction:column;gap:8px;position:relative;z-index:1}
+.flow div{display:flex;justify-content:space-between;gap:10px;font-size:.9rem;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12)}
+.flow div:last-child{border:0;font-weight:800}
+.flow span{color:var(--on-plum-2)}
+.flow b{font-family:var(--f-num);font-weight:600}
+@media (max-width:640px){.hero{grid-template-columns:1fr} #sumTiles{grid-template-columns:repeat(2,minmax(0,1fr))} #sumTiles .tile:last-child:nth-child(odd){grid-column:1/-1}}
+.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.quick{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.qa{all:unset;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:.92rem;box-shadow:var(--shadow);min-width:0}
+.qa:hover{border-color:var(--accent)}
+.qa:focus-visible{outline:3px solid var(--accent)}
+.qa i{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--q-bg);color:var(--q-fg)}
+.qa i svg{width:20px;height:20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px}
+.toplist,.lowlist{display:flex;flex-direction:column;gap:10px}
+.tp{display:flex;gap:12px;align-items:center;min-width:0}
+.tp .pic{width:44px;height:58px;flex:none}
+.tp .info{flex:1;min-width:0}
+.tp .nm{font-weight:600;font-size:.88rem;overflow-wrap:anywhere}
+.meter{height:7px;border-radius:4px;background:var(--sunk);margin-top:5px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:4px;background:var(--accent)}
+.sl{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);min-width:0}
+.sl:last-child{border-bottom:0}
+.sl .pic{width:38px;height:50px;flex:none}
+.sl .info{flex:1;min-width:0}
+.sl .nm{font-weight:700;font-size:.88rem;overflow-wrap:anywhere}
+.sl .meta{font-size:.78rem;color:var(--muted)}
+.sl .amt{text-align:right;font-family:var(--f-num);font-weight:600;font-size:.9rem;white-space:nowrap}
+.sl .amt small{display:block;font-family:var(--f-body);font-weight:500;font-size:.74rem;color:var(--muted)}
+.sl .edited{font-size:.68rem;font-weight:700;color:var(--violet);background:var(--violet-soft);padding:1px 6px;border-radius:99px;margin-left:4px}
+.tp .q{font-family:var(--f-num);font-weight:600;font-size:.9rem;white-space:nowrap}
+
+.pnav{display:inline-flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:2px}
+.pnav button{all:unset;cursor:pointer;width:32px;height:32px;border-radius:9px;text-align:center;line-height:32px;font-weight:800}
+.pnav button:hover{background:var(--sunk)} .pnav button:focus-visible{outline:2px solid var(--accent)}
+.pnav b{font-family:var(--f-display);font-weight:700;font-size:.9rem;min-width:118px;text-align:center}
+.chans{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px}
+.chan{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);display:flex;flex-direction:column;gap:4px}
+.chan .nm{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:8px}
+.chan .nm i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.chan .v{font-family:var(--f-num);font-size:1.2rem;font-weight:600}
+.chan .sub{font-size:.78rem;color:var(--muted)}
+.chan .meter{margin-top:6px}
+body.locked .money{display:none!important}
+@media (max-width:1023px){.hfoot{flex-direction:row!important}}
+body:not(.locked) .lockpanel{display:none!important}
+.homelock{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-radius:12px;background:var(--violet-soft);color:var(--ink);font-weight:600;font-size:.9rem}
+body:not(.locked) .homelock{display:none}
+.pin{font-family:var(--f-num);font-size:1.6rem;letter-spacing:.4em;text-align:center;padding:12px}
+.restock .rs{align-items:center}
+.restock .rs .rk{font-family:var(--f-display);font-weight:800;font-size:1.4rem;color:var(--muted);min-width:30px;text-align:center}
+.restock .rs.first{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
+.restock .rs.first .rk{color:var(--accent)}
+.pill-first{font-size:.72rem;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--accent);color:var(--accent-ink)}
+.trtop{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px}
+.trbig{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);display:flex;gap:14px;align-items:center;position:relative;overflow:hidden}
+.trbig::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tone,var(--accent))}
+.trbig .pic{width:58px;height:78px;flex:none}
+.trbig .big{font-family:var(--f-display);font-weight:800;font-size:1.5rem;line-height:1.1}
+.trbig .sub{font-size:.8rem;color:var(--muted);margin-top:3px}
+.mr{display:grid;grid-template-columns:minmax(78px,auto) 1fr auto;gap:4px 12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.mr:last-child{border-bottom:0}
+.mr .mn{font-weight:700;font-size:.92rem}
+.mr .bar{height:9px;border-radius:5px;background:var(--sunk);overflow:hidden}
+.mr .bar i{display:block;height:100%;border-radius:5px;background:var(--accent)}
+.mr .nums{font-family:var(--f-num);font-size:.82rem;white-space:nowrap;text-align:right}
+.mr .nums b{font-size:.95rem}
+.mr .tg{grid-column:2/4;display:flex;gap:6px;flex-wrap:wrap}
+.tg span{font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:99px}
+.tg .hot{background:var(--accent);color:var(--accent-ink)} .tg .ok{background:var(--good-soft);color:var(--good)}
+.tg .slow{background:var(--warn-soft);color:var(--warn)} .tg .dead{background:var(--bad-soft);color:var(--bad)}
+.trcases>.empty{grid-column:1/-1}
+.trcases{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px}
+.tc{border:1px solid var(--line);border-radius:14px;padding:6px;background:var(--bg);position:relative;display:flex;flex-direction:column;gap:4px}
+.tc .pic{width:100%;aspect-ratio:3/4}
+.tc .no{position:absolute;top:10px;left:10px;background:var(--surface);border-radius:8px;padding:0 7px;box-shadow:var(--shadow)}
+.tc .rk{position:absolute;top:10px;right:10px;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:0 7px;font-weight:800;font-size:.8rem}
+.tc .nm{font-size:.72rem;color:var(--muted);line-height:1.2;min-height:2.4em}
+.tc .q{font-weight:800;font-size:.85rem}
+.tc .q.dead{color:var(--bad)}
+.unst{font-size:.8rem;color:var(--muted);margin-top:10px;line-height:1.5}
+.avgsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:10px}
+.avgsum div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.avgsum b{display:block;font-family:var(--f-num);font-size:1.15rem;font-weight:700}
+.avgsum span{font-size:.75rem;color:var(--muted);font-weight:600}
+.ar{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.ar:last-child{border-bottom:0}
+.ar .pic{width:40px;height:54px}
+.ar .nm{font-weight:700;font-size:.88rem;overflow-wrap:anywhere}
+.ar .meta{font-size:.76rem;color:var(--muted)}
+.ar .av{text-align:right;white-space:nowrap}
+.ar .av b{display:block;font-family:var(--f-num);font-size:1.05rem}
+.ar .av small{font-size:.72rem;color:var(--muted)}
+/* SELL */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px}
+.card{all:unset;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:7px;display:flex;flex-direction:column;gap:5px;position:relative;box-shadow:var(--shadow)}
+.card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.card:focus-visible{outline:3px solid var(--accent)}
+.card .pic{width:100%;aspect-ratio:3/4;max-width:100%}
+.card .no{position:absolute;top:11px;left:11px;background:var(--surface);border-radius:8px;padding:0 8px;font-size:1rem;box-shadow:var(--shadow)}
+.card .nm{font-size:.75rem;line-height:1.2;color:var(--muted);min-height:2.4em;padding:0 2px}
+.card .lft{font-size:.72rem;font-weight:700;padding:0 2px 2px}
+.sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(30,18,45,.5)}
+.sheet .box{background:var(--surface);width:min(640px,100%);max-height:92%;overflow:auto;border-radius:22px 22px 0 0;padding:20px max(16px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+@media (min-width:700px){.sheet{align-items:center}.sheet .box{border-radius:22px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{all:unset;cursor:pointer;padding:8px 11px;border-radius:11px;border:1px solid var(--line);background:var(--bg);font-weight:700;font-size:.85rem;display:inline-flex;gap:6px;align-items:baseline}
+.chip small{font-family:var(--f-num);font-size:.72rem;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip[aria-pressed="true"] small{color:inherit}
+.chip.out{opacity:.55}
+.chip:focus-visible{outline:2px solid var(--accent)}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stepper button{all:unset;cursor:pointer;width:44px;height:44px;text-align:center;font-size:1.3rem;font-weight:700;background:var(--sunk)}
+.stepper span{min-width:50px;text-align:center;font-family:var(--f-num);font-size:1.2rem;font-weight:600}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--plum);color:var(--on-plum);padding:11px 15px;border-radius:14px;display:flex;gap:12px;align-items:center;font-weight:600;font-size:.9rem;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.toast button{all:unset;cursor:pointer;color:var(--accent);font-weight:800}
+@media (min-width:721px){.toast{bottom:calc(24px + env(safe-area-inset-bottom,0px))}}
+@media (min-width:1024px){.toast{left:calc(50% + 124px)}}
+
+/* stock entry sheet */
+.card .badge{position:absolute;top:11px;right:11px;font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+.card .badge.none{background:var(--sunk);color:var(--muted)}
+.mrows{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:8px}
+.mrow{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);min-width:0}
+.mrow.on{border-color:var(--good);background:var(--add)}
+.mrow .mn{flex:1;min-width:0;font-weight:700;font-size:.88rem}
+.mrow .mn small{display:block;font-weight:500;font-size:.72rem;color:var(--muted)}
+.mini{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.mini button{all:unset;cursor:pointer;width:34px;height:34px;text-align:center;font-weight:800;font-size:1.1rem;background:var(--sunk)}
+.mini button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.mini input{width:46px;border:0;border-radius:0;text-align:center;padding:6px 2px;background:transparent;font-family:var(--f-num);font-weight:600;-moz-appearance:textfield}
+.mini input::-webkit-outer-spin-button,.mini input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.prices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheetfoot{position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom,0px));background:var(--surface);padding-top:10px;margin-bottom:calc(-20px - env(safe-area-inset-bottom,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.mchips{display:flex;flex-wrap:wrap;gap:8px}
+.mchip{all:unset;cursor:pointer;padding:9px 13px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:.9rem;display:inline-flex;gap:7px;align-items:baseline;box-shadow:var(--shadow)}
+.mchip small{font-family:var(--f-num);font-size:.72rem;color:var(--muted);font-weight:600}
+.mchip[aria-pressed="true"]{background:var(--plum);border-color:var(--plum);color:var(--on-plum)}
+.mchip[aria-pressed="true"] small{color:var(--on-plum-2)}
+.mchip:focus-visible{outline:3px solid var(--accent)}
+.dlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:10px}
+.drow{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface);min-width:0;box-shadow:var(--shadow)}
+.drow.on{border-color:var(--good);background:var(--add)}
+.drow .pic{width:52px;height:68px;flex:none}
+.drow .info{flex:1;min-width:0}
+.drow .nm{font-weight:700;font-size:.86rem;line-height:1.2;overflow-wrap:anywhere}
+.drow .nm .no{font-size:1.05rem;margin-right:4px}
+.drow .have{font-size:.76rem;color:var(--muted);margin-top:2px}
+.savebar{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border-radius:16px;background:var(--plum);color:var(--on-plum);box-shadow:0 10px 30px rgba(30,18,45,.35)}
+.savebar .btn{padding:12px 20px}
+@media (max-width:720px){.savebar{bottom:calc(78px + env(safe-area-inset-bottom,0px))}}
+/* MONTH SHEET */
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:4px;border:1px solid var(--line)}
+.gridbox{max-height:74vh;overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:separate;border-spacing:0}
+.g{font-size:.82rem}
+.g th,.g td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0;text-align:center;white-space:nowrap}
+.g thead th{position:sticky;z-index:2;background:var(--plum);color:var(--on-plum);font-size:.72rem;padding:6px 4px}
+.g thead tr.r1 th{top:0;height:30px}
+.g thead tr.r2 th{top:30px;background:var(--violet-soft);color:var(--ink);font-size:.64rem;font-weight:700;padding:3px 2px}
+.g .fx{position:sticky;left:0;z-index:1;background:var(--surface);text-align:left;padding:4px 8px;min-width:190px;max-width:210px;white-space:normal}
+.g thead .fx{z-index:3;background:var(--plum)}
+.g thead tr.r2 .fx{background:var(--violet-soft)}
+.dcell{display:flex;gap:8px;align-items:center}
+.dcell .pic{width:44px;height:58px;flex:none}
+.dcell .no{font-size:1.05rem}
+.dcell .nm{font-size:.72rem;color:var(--muted);line-height:1.15}
+.g td.m{font-family:var(--f-num);padding:0 8px;font-size:.8rem;background:var(--surface)}
+.g td input{width:40px;border:0;border-radius:0;background:transparent;text-align:center;padding:8px 1px;font-family:var(--f-num);font-size:.86rem;-moz-appearance:textfield}
+.g td input::-webkit-outer-spin-button,.g td input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.g td.s{background:var(--start)} .g td.a{background:var(--add)} .g td.o{background:var(--sold)}
+.g td.s input::placeholder{color:var(--muted);opacity:1}
+.g td.o input{font-weight:700}
+.g td.l{font-family:var(--f-num);font-weight:700;min-width:36px}
+.g td.l.z{color:var(--zero);font-weight:400}
+.g td.l.lo{background:var(--warn-soft);color:var(--warn)}
+.g td.l.neg{background:var(--bad-soft);color:var(--bad)}
+.g td.grp,.g th.grp{border-left:2px solid var(--violet)}
+.g td input:focus{outline:2px solid var(--accent);outline-offset:-2px;background:var(--surface)}
+.g tr.sec td{background:var(--violet-soft);text-align:left;font-family:var(--f-display);font-weight:800;color:var(--violet);padding:8px 10px}
+.g input.price{width:72px;font-size:.8rem}
+
+/* tables & forms */
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow)}
+.t{width:100%;font-size:.9rem}
+.t th,.t td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.t th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--sunk)}
+.t td.r,.t th.r{text-align:right}
+.t tr:last-child td{border-bottom:0}
+.wrapc{white-space:normal!important;min-width:160px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;align-items:end}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:.8rem;font-weight:700;color:var(--muted);min-width:0}
+.restock{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.rs{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0;box-shadow:var(--shadow)}
+.rs .pic{width:64px;height:84px;flex:none}
+.lowchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.lowchips span{font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+.lowchips span.out{background:var(--bad-soft);color:var(--bad)}
+.chart svg{width:100%;height:auto;display:block}
+.dsg .pic{width:48px;height:64px}
+@media (prefers-reduced-motion:no-preference){.card,.qa{transition:border-color .12s,transform .12s}}
+</style>
+
+
+<header>
+  <div class="hwrap">
+    <div class="brand"><span class="logo" aria-hidden="true">F</span><div><b>Fasmie Hub</b><div class="who" id="who">Phone cases · KSh</div></div></div>
+    <div class="month"><button id="mPrev" aria-label="Previous month">‹</button><b id="mLabel">—</b><button id="mNext" aria-label="Next month">›</button></div>
+    <nav role="tablist" id="tabs" aria-label="Sections" aria-orientation="vertical">
+      <div class="navlabel">Daily</div>
+      <button role="tab" data-tab="home" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg><span>Home</span></button>
+      <button role="tab" data-tab="sell" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span>Sell</span></button>
+      <button role="tab" data-tab="sheet" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg><span>Stock</span></button>
+      <button role="tab" data-tab="restock" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg><span>Restock</span></button>
+      <button role="tab" data-tab="trends" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/><path d="M15 8h5v5"/></svg><span>Best sellers</span></button>
+      <div class="navlabel">Money &amp; setup</div>
+      <button role="tab" data-tab="bills" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>Bills</span></button>
+      <button role="tab" class="desk" data-tab="designs" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><circle cx="10" cy="6.5" r="1.5"/></svg><span>Cases</span></button>
+    </nav>
+    <div class="hfoot" style="display:flex;flex-direction:column;gap:8px"><button class="hbtn" id="lockBtn" type="button" title="Show or hide money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span id="lockTxt">Show money</span></button><button class="hbtn" id="backupBtn" type="button" title="Save everything as an Excel file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v3h16v-3"/></svg><span>Download backup</span></button></div>
+  </div>
+</header>
+
+
+<main class="wrap">
+  <div id="banner" class="banner" hidden></div>
+
+  <section id="p-home" class="stack" hidden>
+    <div class="hello">
+      <div><div class="eyebrow" id="hDate"></div><h1 id="hHello">Karibu</h1></div>
+      <div class="row">
+        <div class="seg" id="period" role="group" aria-label="Show sales for"><button data-p="day" aria-pressed="false">Today</button><button data-p="week" aria-pressed="false">This week</button><button data-p="month" aria-pressed="true">This month</button></div>
+        <div class="pnav" id="pnav" hidden><button id="pPrev" aria-label="Earlier">‹</button><b id="pLabel"></b><button id="pNext" aria-label="Later">›</button></div>
+      </div>
+    </div>
+    <div class="homelock"><span>This week, this month and bills are locked. Today's sales are open to everyone.</span><button class="btn small" type="button" data-unlock>Unlock</button></div>
+    <div class="hero">
+      <div style="position:relative;z-index:1">
+        <div class="eyebrow" id="heroLabel">What you earned this month</div>
+        <div class="big" id="heroBig">KSh 0</div>
+        <div class="note" id="heroNote">After the cost of cases and all bills.</div>
+      </div>
+      <div class="flow" id="heroFlow"></div>
+    </div>
+    <div class="quick">
+      <button class="qa" data-go="sell" style="--q-bg:var(--accent-soft);--q-fg:var(--accent)"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></i>Record a sale</button>
+      <button class="qa" data-go="sheet" style="--q-bg:var(--good-soft);--q-fg:var(--good)"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>Update stock</button>
+      <button class="qa" data-go="restock" style="--q-bg:var(--warn-soft);--q-fg:var(--warn)"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg></i>Restock list</button>
+      <button class="qa" data-go="bills" style="--q-bg:var(--violet-soft);--q-fg:var(--violet)"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></i>Add a bill</button>
+    </div>
+    <div class="tiles" id="sumTiles"></div>
+    <div class="panel chart money"><div class="phead"><h3 id="dailyTitle">Sales per day</h3><span class="muted" style="font-size:.8rem" id="dailySub">KSh</span></div><div id="dailyChart"></div></div>
+    <div class="panel"><div class="phead"><h3 id="chanTitle">Where sales came from</h3><span class="muted" style="font-size:.8rem">Walk-in · TikTok Live · Jumia · Kilimall</span></div><div class="chans" id="chanBox"></div></div>
+    <div class="panel"><div class="phead"><h3 id="logTitle">Sales list</h3><span class="muted" style="font-size:.8rem">To fix a sale, press the Edit button on its line</span></div><div id="saleLog"></div></div>
+    <div class="grid2">
+      <div class="panel chart money"><div class="phead"><h3>Last 6 months</h3></div><div id="sumChart"></div></div>
+      <div class="panel"><div class="phead"><h3 id="topTitle">Most preferred this month</h3><button class="link" data-go="restock">See all</button></div><div class="toplist" id="homeTop"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><div class="phead"><h3>Running low</h3><button class="link" data-go="restock">Restock list</button></div><div class="lowlist" id="homeLow"></div></div>
+      <div class="panel" style="display:flex;flex-direction:column;gap:12px;justify-content:space-between">
+        <div><h3>Backup</h3><div class="muted" style="font-size:.88rem;margin-top:4px" id="backupNote">Save all stock, sales and bills as an Excel file on this device. Do it once a week.</div></div>
+        <div class="row"><button class="btn" type="button" id="backupBtn2">Download backup</button><button class="btn ghost" type="button" data-go="designs">Manage cases</button></div>
+      </div>
+    </div>
+    <div class="money"><div class="phead"><h3>Month by month</h3></div><div class="tscroll" id="sumTable"></div></div>
+  </section>
+
+
+  <section id="p-sell" class="stack" hidden>
+    <div class="row" style="justify-content:space-between">
+      <div><div class="eyebrow">Tap the case you sold</div><h2>Sell</h2></div>
+      <div class="row">
+        <div class="seg" id="sellBrand"><button data-b="iphone" aria-pressed="true">iPhone</button><button data-b="samsung" aria-pressed="false">Samsung</button><button data-b="acc" aria-pressed="false">Accessories</button></div>
+        <input type="search" id="sellFind" placeholder="Number or name" aria-label="Find a case" style="width:150px">
+      </div>
+    </div>
+    <div class="tiles money" id="sellTiles"></div>
+    <div class="cards" id="cards"></div>
+    <div class="panel"><div class="phead"><h3>Today's sales</h3><span class="muted" style="font-size:.8rem">Wrong price? Press Edit on that sale</span></div><div id="sellLog"></div></div>
+  </section>
+
+  <section id="p-sheet" class="stack" hidden>
+    <div class="row" style="justify-content:space-between;align-items:flex-end">
+      <div><div class="eyebrow" id="stockEyebrow">Tap a case to add new stock</div><h2 id="sheetTitle">Stock</h2></div>
+      <div class="seg" id="stockView"><button data-v="model" aria-pressed="true">By phone model</button><button data-v="cards" aria-pressed="false">By photo</button><button data-v="sheet" aria-pressed="false">Full sheet</button></div>
+    </div>
+    <div class="tiles" id="stockTiles"></div>
+    <div id="stockModelWrap" class="stack"></div>
+    <div id="stockCardsWrap" class="stack">
+      <div class="row" style="justify-content:space-between">
+        <div class="seg" id="stockBrand"><button data-b="iphone" aria-pressed="true">iPhone</button><button data-b="samsung" aria-pressed="false">Samsung</button><button data-b="acc" aria-pressed="false">Accessories</button></div>
+        <input type="search" id="stockFind" placeholder="Number or name" aria-label="Find a case" style="width:160px">
+      </div>
+      <div class="cards" id="stockCards"></div>
+    </div>
+    <div id="sheetWrap" class="stack" hidden>
+      <div class="row" style="justify-content:space-between">
+        <div class="legend">
+          <span><i class="sw" style="background:var(--start)"></i><b>Start</b> – from last month</span>
+          <span><i class="sw" style="background:var(--add)"></i><b>Added</b> – arrived</span>
+          <span><i class="sw" style="background:var(--sold)"></i><b>Sold</b></span>
+          <span><b>Left</b> · <i class="sw" style="background:var(--warn-soft)"></i>1–2 left</span>
+        </div>
+        <label class="row" style="gap:6px;font-size:.85rem;font-weight:600"><input type="checkbox" id="onlyStocked"> Only phone models I stock</label>
+      </div>
+      <div class="gridbox" id="gridBox"></div>
+    </div>
+  </section>
+
+  <section id="p-restock" class="stack" hidden>
+    <div><div class="eyebrow">Your shopping list</div><h2>Restock</h2>
+      <p class="muted" style="margin:4px 0 0;max-width:68ch;font-size:.9rem">Each line is one case for one phone model with 2 or fewer left. Number 1 is the one to restock first: it sells the most and is running out.</p></div>
+    <div class="restock" id="restockList"></div>
+  </section>
+
+
+
+  <section id="p-trends" class="stack" hidden>
+    <div class="row" style="justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+      <div><div class="eyebrow">What sells and what doesn't</div><h2>Best sellers</h2>
+      <p class="muted" style="margin:4px 0 0;max-width:68ch;font-size:.9rem">Which cases and phone models people buy most, and which ones are sitting in stock. Use it before ordering: bring more of the top ones, skip the ones marked “Don’t restock”.</p></div>
+      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn" type="button" id="avgBtn" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-4px;margin-right:6px"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span>Average selling price</span></button>
+        <div class="seg" id="trPeriod" role="group" aria-label="Count sales from"><button data-p="all" aria-pressed="true">All months</button><button data-p="month" aria-pressed="false">This month</button></div>
+      </div>
+    </div>
+    <div id="trNote" class="muted" style="font-size:.85rem"></div>
+    <div class="panel" id="trAvg" hidden>
+      <div class="phead"><h3>Average selling price per case</h3><button class="link" type="button" id="avgClose">Close</button></div>
+      <p class="muted" style="font-size:.85rem;margin:0 0 10px">Average price = total sales money ÷ number of cases sold. Only sales entered with a price are counted (cases marked sold with no price are left out).</p>
+      <div class="avgsum" id="avgSum"></div>
+      <div class="row" style="gap:8px;margin:12px 0 4px;flex-wrap:wrap"><span class="muted" style="font-size:.8rem;font-weight:700">Sort by</span>
+        <div class="seg" id="avgSort" role="group" aria-label="Sort by"><button data-s="sold" aria-pressed="true">Most sold</button><button data-s="high" aria-pressed="false">Highest</button><button data-s="low" aria-pressed="false">Lowest</button></div></div>
+      <div id="avgList"></div>
+    </div>
+    <div class="trtop" id="trTop"></div>
+    <div class="grid2">
+      <div class="panel"><div class="phead"><h3>iPhone models</h3><span class="muted" style="font-size:.8rem">Best to slowest</span></div><div id="trIphone"></div></div>
+      <div class="panel"><div class="phead"><h3>Samsung models</h3><span class="muted" style="font-size:.8rem">Best to slowest</span></div><div id="trSamsung"></div></div>
+    </div>
+    <div class="panel"><div class="phead"><h3>Most preferred cases</h3><span class="muted" style="font-size:.8rem">Most sold first</span></div><div class="trcases" id="trBest"></div></div>
+    <div class="panel"><div class="phead"><h3>Cases not selling</h3><span class="muted" style="font-size:.8rem">No sales yet, most stock first. Push these on TikTok Live, don’t reorder</span></div><div class="trcases" id="trSlow"></div></div>
+    <div id="trCheck"></div>
+  </section>
+
+  <section id="p-bills" class="stack" hidden>
+    <div><div class="eyebrow">Money going out</div><h2 id="billsTitle">Bills</h2></div>
+    <div class="panel lockpanel"><div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px;text-align:center"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--accent)"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><h3>Bills are locked</h3><p class="muted" style="max-width:40ch">Enter the money password to see and add bills.</p><button class="btn" type="button" data-unlock>Unlock</button></div></div>
+    <div class="money stack">
+    <div class="panel">
+      <form id="billForm" class="form" autocomplete="off">
+        <label class="f">Date<input type="date" id="bDate" required></label>
+        <label class="f">Type<select id="bCat"><option>Staff payment</option><option>Rent</option><option>Miscellaneous</option></select></label>
+        <label class="f">Amount (KSh)<input type="number" id="bAmt" min="1" step="1" required></label>
+        <label class="f">Details<input type="text" id="bNote" placeholder="e.g. October rent"></label>
+        <div class="row"><button class="btn" type="submit">Save bill</button><span class="msg" id="billMsg"></span></div>
+      </form>
+    </div>
+    <div class="tiles" id="billTiles"></div>
+    <div id="billList"></div>
+  </div>
+  </section>
+
+  <section id="p-designs" class="stack" hidden>
+    <div><div class="eyebrow">Your cases</div><h2>Designs</h2>
+      <p class="muted" style="margin:4px 0 0;font-size:.9rem;max-width:66ch">Add a new case with a photo. It gets the next number and appears on the Sell screen and the stock sheet straight away. Prices are set on the stock sheet.</p></div>
+    <div class="panel" id="addPanel">
+      <form id="addForm" class="form" autocomplete="off">
+        <label class="f">Photo<input type="file" id="aPhoto" accept="image/*" required></label>
+        <label class="f">Short name<input type="text" id="aName" placeholder="e.g. Red hearts" required></label>
+        <label class="f">For<select id="aBrand"><option value="iphone">iPhone</option><option value="samsung">Samsung</option></select></label>
+        <div class="row"><button class="btn" type="submit" id="aBtn">Add case</button><span class="msg" id="aMsg"></span></div>
+      </form>
+    </div>
+    <div class="tscroll"><table class="t dsg"><thead><tr><th>No.</th><th>Photo</th><th>Name</th><th>For</th><th></th></tr></thead><tbody id="dRows"></tbody></table></div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const kshRaw = n => "KSh " + Math.round(n || 0).toLocaleString("en-KE");
+  const ksh = kshRaw;
+  const pad = n => String(n).padStart(2, "0");
+  const todayStr = () => { const d = new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+  const thisMonth = () => todayStr().slice(0, 7);
+  const shift = (m, k) => { const [y, mo] = m.split("-").map(Number); const d = new Date(y, mo-1+k, 1); return d.getFullYear()+"-"+pad(d.getMonth()+1); };
+  const mLong = m => { const [y, mo] = m.split("-").map(Number); return new Date(y, mo-1, 1).toLocaleDateString("en-GB", {month:"long", year:"numeric"}); };
+  const mShort = m => { const [y, mo] = m.split("-").map(Number); return new Date(y, mo-1, 1).toLocaleDateString("en-GB", {month:"short"}); };
+  const ls = { get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e) {} } };
+  const N = v => Number(v) || 0;
+  const photo = d => d.photo ? "/_blob/" + d.photo : "";
+  const picTag = (d, cls="pic") => d.photo ? `<img class="${cls}" src="${esc(photo(d))}" alt="Case ${esc(d.no)}" loading="lazy">` : `<span class="${cls}"></span>`;
+
+  document.body.classList.add("locked");
+  try { localStorage.setItem("fh2-period","day"); } catch(e) {}
+  const S = { db:null, assets:null, designs:[], models:{iphone:[],samsung:[]}, months:{}, bills:[],
+    month: thisMonth(), tab: ls.get("fh2-tab") || "home", sellBrand: ls.get("fh2-brand") || "iphone", find:"", onlyStocked: ls.get("fh2-only") === "1", days: {}, period: ls.get("fh2-period") || "day", day: todayStr() };
+  const Q = {}; const queue = (k, fn) => (Q[k] = (Q[k] || Promise.resolve()).then(fn, fn));
+
+  function banner(t, tone){ const b=$("#banner"); b.hidden=!t; b.textContent=t||""; if(tone) b.dataset.tone=tone; else delete b.dataset.tone; }
+
+  /* ---------- calculations ---------- */
+  const monthKeys = () => Object.keys(S.months).sort();
+  const earliest = () => monthKeys()[0] || S.month;
+  const cell = (m, d, mod) => (((S.months[m] || {}).cells || {})[d] || {})[mod] || {};
+  let memo = {};
+  function startOf(m, d, mod){
+    const c = cell(m, d, mod);
+    if (c.start !== undefined && c.start !== null && c.start !== "") return N(c.start);
+    if (m <= earliest()) return 0;
+    return leftOf(shift(m, -1), d, mod);
+  }
+  function leftOf(m, d, mod){
+    const k = m+"|"+d+"|"+mod; if (k in memo) return memo[k];
+    if (m < earliest()) return memo[k] = 0;
+    const c = cell(m, d, mod);
+    return memo[k] = startOf(m, d, mod) + N(c.added) - N(c.sold);
+  }
+  function priceOf(m, d){
+    let k = m;
+    for (let i = 0; i < 240 && k >= earliest(); i++, k = shift(k, -1)){
+      const p = ((S.months[k] || {}).prices || {})[d]; if (p) return { buy: N(p.buy), sell: N(p.sell) };
+    }
+    return { buy: 0, sell: 0 };
+  }
+  const modelsOf = b => S.models[b] || [];
+  const soldOf = (m, d) => { const des = S.designs.find(x => x.id === d); return modelsOf(des ? des.brand : "iphone").reduce((a, mo) => a + N(cell(m, d, mo.id).sold), 0); };
+  const stocked = (m, d, mod) => startOf(m, d, mod) + N(cell(m, d, mod).added) > 0;
+  function cellRev(m, d, mod, listSell){
+    const c = cell(m, d, mod), q = N(c.sold), rq = Math.min(q, N(c.revq));
+    return (N(c.revq) ? N(c.rev) * rq / N(c.revq) : 0) + (q - rq) * listSell;
+  }
+  function designRev(m, d){ const des = S.designs.find(x => x.id===d); const p = priceOf(m, d); return modelsOf(des ? des.brand : "iphone").reduce((a, mo) => a + cellRev(m, d, mo.id, p.sell), 0); }
+  function monthTotals(m){
+    let units=0, rev=0, cost=0;
+    S.designs.forEach(d => { const q = soldOf(m, d.id); if (!q) return; const p = priceOf(m, d.id); units+=q; rev+=designRev(m, d.id); cost+=q*p.buy; });
+    const bills = S.bills.filter(b => b.month === m); const cats = {"Staff payment":0, "Rent":0, "Miscellaneous":0};
+    bills.forEach(b => cats[b.category] = (cats[b.category]||0) + N(b.amount));
+    const bt = Object.values(cats).reduce((a,b)=>a+b,0);
+    return { units, rev, cost, gross: rev-cost, cats, bills: bt, net: rev-cost-bt };
+  }
+  function totalLeft(m){ let n=0; S.designs.forEach(d => modelsOf(d.brand).forEach(mo => n += Math.max(0, leftOf(m, d.id, mo.id)))); return n; }
+  const designLeft = (m, d) => modelsOf(d.brand).reduce((a, mo) => a + leftOf(m, d.id, mo.id), 0);
+
+  /* ---------- writes ---------- */
+  const CREATED = {};
+  const dIso = dt => dt.getFullYear()+"-"+pad(dt.getMonth()+1)+"-"+pad(dt.getDate());
+  const dParse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+  const dAdd = (s, k) => { const t = dParse(s); t.setDate(t.getDate()+k); return dIso(t); };
+  const weekStart = s => { const t = dParse(s); const wd = (t.getDay()+6)%7; t.setDate(t.getDate()-wd); return dIso(t); };
+  const dNice = (s, o) => dParse(s).toLocaleDateString("en-GB", o || { weekday:"short", day:"numeric", month:"short" });
+  function dayLines(date){
+    const out = []; const sales = (S.days[date] || {}).sales || {}; const m = date.slice(0,7);
+    const amt = (S.days[date] || {}).amt || {}, amtq = (S.days[date] || {}).amtq || {};
+    for (const d in sales) for (const mod in sales[d]) { const q = N(sales[d][mod]); if (q > 0) { const p = priceOf(m, d);
+      const aq = N((amtq[d]||{})[mod]), a = N((amt[d]||{})[mod]), rq = Math.min(q, aq);
+      out.push({ d, mod, q, rev: (aq ? a*rq/aq : 0) + (q-rq)*p.sell, cost: q*p.buy }); } }
+    return out;
+  }
+  function rangeTotals(dates){
+    let units=0, rev=0, cost=0; const lines=[];
+    dates.forEach(dt => dayLines(dt).forEach(l => { units+=l.q; rev+=l.rev; cost+=l.cost; lines.push(l); }));
+    return { units, rev, cost, gross: rev-cost, lines };
+  }
+  async function logDay(date, d, mod, delta, amount, entry, sid){
+    if (!S.db || (!delta && !amount && !entry)) return;
+    const ref = S.db.doc("days/" + date);
+    return queue("d" + date, async () => {
+      const day = S.days[date] = S.days[date] || { month: date.slice(0,7), sales: {} };
+      day.sales = day.sales || {}; day.sales[d] = { ...(day.sales[d] || {}) };
+      const next = Math.max(0, N(day.sales[d][mod]) + delta); day.sales[d][mod] = next;
+      const patch = { sales: { [d]: { [mod]: next } } };
+      if (amount !== undefined) { day.amt = day.amt || {}; day.amtq = day.amtq || {}; day.amt[d] = { ...(day.amt[d]||{}) }; day.amtq[d] = { ...(day.amtq[d]||{}) };
+        const na = Math.max(0, N(day.amt[d][mod]) + amount), nq = Math.max(0, N(day.amtq[d][mod]) + delta); day.amt[d][mod] = na; day.amtq[d][mod] = nq;
+        patch.amt = { [d]: { [mod]: na } }; patch.amtq = { [d]: { [mod]: nq } }; }
+      if (entry && sid) { day.log = { ...(day.log || {}) }; day.log[sid] = entry; patch.log = { [sid]: entry }; }
+      if (EXISTS["d"+date] || CREATED["d"+date]) await ref.update(patch); else { await ref.set({ month: date.slice(0,7), ...patch }); CREATED["d"+date] = true; }
+      render();
+    }).catch(() => banner("Could not save the daily sales log. The monthly totals are still saved.", "bad"));
+  }
+  const EXISTS = {};
+  async function writeMany(m, d, cellsPatch, pricePatch){
+    if (!S.db) throw new Error("Not connected");
+    const ref = S.db.doc("months/" + m);
+    const patch = {}; if (cellsPatch && Object.keys(cellsPatch).length) patch.cells = { [d]: cellsPatch }; if (pricePatch) patch.prices = { [d]: pricePatch };
+    if (!Object.keys(patch).length) return;
+    return queue("m" + m, async () => {
+      if (S.months[m] || CREATED[m]) await ref.update(patch); else { await ref.set({ cells: patch.cells || {}, prices: patch.prices || {} }); CREATED[m] = true; }
+    });
+  }
+  async function writeCell(m, d, mod, field, value){
+    if (!S.db) return;
+    const ref = S.db.doc("months/" + m);
+    const patch = { cells: { [d]: { [mod]: { [field]: value } } } };
+    return queue("m" + m, async () => {
+      if (S.months[m] || CREATED[m]) await ref.update(patch); else { await ref.set({ cells: patch.cells, prices: {} }); CREATED[m] = true; }
+    }).catch(err => banner("Could not save. " + (err && err.message || "Check your connection."), "bad"));
+  }
+  async function writePrice(m, d, field, value){
+    if (!S.db) return;
+    const ref = S.db.doc("months/" + m); const cur = priceOf(m, d);
+    const patch = { prices: { [d]: { buy: cur.buy, sell: cur.sell, [field]: value } } };
+    return queue("m" + m, async () => { if (S.months[m] || CREATED[m]) await ref.update(patch); else { await ref.set({ cells: {}, prices: patch.prices }); CREATED[m] = true; } })
+      .catch(err => banner("Could not save the price. " + (err && err.message || ""), "bad"));
+  }
+
+  /* ---------- tabs & month ---------- */
+  const TABS = ["home","sell","sheet","restock","trends","bills","designs"];
+  function showTab(t){ if(!TABS.includes(t)) t="home"; S.tab=t; ls.set("fh2-tab",t);
+    document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===t));
+    TABS.forEach(x => $("#p-"+x).hidden = x!==t); render(); }
+  $("#tabs").addEventListener("click", e => { const b=e.target.closest("button"); if(b) showTab(b.dataset.tab); });
+  document.addEventListener("click", e => { const g=e.target.closest("[data-go]"); if(g){ showTab(g.dataset.go); window.scrollTo({top:0}); } });
+  $("#mPrev").addEventListener("click", () => { S.month = shift(S.month,-1); gridKey=""; render(); });
+  $("#mNext").addEventListener("click", () => { S.month = shift(S.month,1); gridKey=""; render(); });
+
+  /* ---------- MONEY LOCK ---------- */
+  const PASS_HASH = "0ead2060b65992dca4769af601a1b3a35ef38cfad2c2c465bb160ea764157c5d";
+  async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,"0")).join(""); }
+  let lockTimer = null;
+  function setLocked(v){ S.unlocked = !v; if (v && S.period !== "day"){ S.period = "day"; S.day = todayStr(); ls.set("fh2-period","day"); } document.body.classList.toggle("locked", v); $("#lockTxt").textContent = v ? "Show money" : "Hide money"; gridKey = ""; render(); }
+  function bump(){ if (!S.unlocked) return; clearTimeout(lockTimer); lockTimer = setTimeout(() => { setLocked(true); toast("Money hidden again after 10 minutes."); }, 10*60*1000); }
+  ["click","keydown","touchstart"].forEach(ev => document.addEventListener(ev, bump, { passive: true }));
+  function askUnlock(then){
+    if (S.unlocked){ then && then(); return; }
+    const box = document.createElement("div"); box.className="sheet"; box.setAttribute("role","dialog"); box.setAttribute("aria-modal","true"); box.setAttribute("aria-label","Enter money password");
+    box.innerHTML = `<div class="box" style="max-width:420px"><div class="row" style="justify-content:space-between"><h3>Enter the money password</h3><button class="btn ghost small" data-x="close" type="button">Close</button></div>
+      <p class="muted" style="font-size:.88rem">Bills and the weekly and monthly totals are protected.</p>
+      <form id="pinForm" class="stack" style="gap:12px" autocomplete="off"><input class="pin" type="password" inputmode="numeric" id="pinIn" aria-label="Password" maxlength="12">
+      <button class="btn" type="submit" style="padding:13px">Unlock</button><div class="msg err" id="pinMsg"></div></form></div>`;
+    document.body.appendChild(box); sheetEl = box;
+    const close = () => { box.remove(); sheetEl = null; };
+    box.addEventListener("click", e => { if (e.target===box || e.target.closest('[data-x="close"]')) close(); });
+    box.querySelector("#pinForm").addEventListener("submit", async e => {
+      e.preventDefault(); const v = box.querySelector("#pinIn").value.trim(); let ok = false;
+      try { ok = (await sha("fasmie:" + v)) === PASS_HASH; } catch(err) { ok = false; }
+      if (!ok){ box.querySelector("#pinMsg").textContent = "Wrong password. Try again."; box.querySelector("#pinIn").select(); return; }
+      close(); setLocked(false); bump(); then && then();
+    });
+    setTimeout(() => box.querySelector("#pinIn").focus(), 50);
+  }
+  document.addEventListener("click", e => { if (e.target.closest("[data-unlock]")) askUnlock(); });
+  $("#lockBtn").addEventListener("click", () => { if (S.unlocked){ setLocked(true); toast("Money hidden."); } else askUnlock(); });
+
+  function render(){
+    memo = {};
+    $("#mLabel").textContent = mLong(S.month);
+    if (S.tab==="sell") renderSell();
+    if (S.tab==="sheet") renderSheet();
+    if (S.tab==="restock") renderRestock();
+    if (S.tab==="trends") renderTrends();
+    if (S.tab==="home") renderSummary();
+    if (S.tab==="bills") renderBills();
+    if (S.tab==="designs") renderDesigns();
+  }
+
+  /* ---------- SELL ---------- */
+  const ACC = ["charms","charger","cable"]; const isAcc = b => ACC.includes(b); const brandName = b => b==="iphone"?"iPhone":b==="samsung"?"Samsung":b==="charms"?"Charms":b==="charger"?"Charger":b==="cable"?"Cable":b; const varLabel = b => b==="cable" ? "Type" : isAcc(b) ? "Colour" : "Phone model";
+  const designsOf = b => b==="acc" ? S.designs.filter(d => isAcc(d.brand)) : S.designs.filter(d => d.brand === b);
+  function renderSell(){
+    document.querySelectorAll("#sellBrand button").forEach(b => b.setAttribute("aria-pressed", b.dataset.b===S.sellBrand));
+    renderLog("#sellLog", [todayStr()], 30);
+    const t = monthTotals(S.month);
+    $("#sellTiles").innerHTML = [["Sold this month", t.units.toLocaleString()],["Sales", ksh(t.rev)],["Profit on cases", ksh(t.gross)]]
+      .map(([l,v]) => `<div class="tile"><span class="eyebrow">${l}</span><span class="v">${v}</span></div>`).join("")
+      + `<div class="tile hero"><span class="eyebrow">Earned after bills</span><span class="v">${ksh(t.net)}</span></div>`;
+    const q = S.find.trim().toLowerCase();
+    const list = designsOf(S.sellBrand).filter(d => !q || String(d.no).toLowerCase()===q || d.name.toLowerCase().includes(q));
+    if (!S.designs.length){ $("#cards").innerHTML = `<div class="empty">Loading your cases…</div>`; return; }
+    $("#cards").innerHTML = list.map(d => { const lf = designLeft(S.month, d);
+      return `<button class="card" data-d="${esc(d.id)}" aria-label="Case ${esc(d.no)} ${esc(d.name)}">${picTag(d)}<span class="no">${esc(d.no)}</span><span class="nm">${esc(d.name)}</span><span class="lft" style="color:${lf>0?"var(--good)":"var(--muted)"}">${lf>0? lf+" in stock" : "None in stock"}</span></button>`; }).join("")
+      || `<div class="empty">No case matches “${esc(S.find)}”.</div>`;
+  }
+  $("#sellBrand").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; S.sellBrand=b.dataset.b; ls.set("fh2-brand",S.sellBrand); renderSell(); });
+  $("#sellFind").addEventListener("input", e => { S.find=e.target.value; renderSell(); });
+  $("#cards").addEventListener("click", e => { const c=e.target.closest(".card"); if(c) openSale(c.dataset.d); });
+
+  let sheetEl = null;
+  const CHANNELS = [{id:"walkin",name:"Walk-in",col:"var(--violet)"},{id:"tiktok",name:"TikTok Live",col:"var(--accent)"},{id:"jumia",name:"Jumia",col:"#f68b1e"},{id:"kilimall",name:"Kilimall",col:"#2f8f6b"}];
+  const chName = id => (CHANNELS.find(c => c.id===id) || {}).name || "Not recorded";
+  const chCol = id => (CHANNELS.find(c => c.id===id) || {}).col || "var(--zero)";
+  const chPicker = cur => `<div><div class="eyebrow" style="margin-bottom:6px">Where did this sale come from?</div><div class="chips">${CHANNELS.map(c => `<button class="chip" data-ch="${c.id}" aria-pressed="${cur===c.id}">${c.name}</button>`).join("")}</div></div>`;
+  function openSale(did){
+    const d = S.designs.find(x => x.id===did); if(!d) return;
+    let qty = 1, chosen = null, showAll = false, ch = null, note = "";
+    if (modelsOf(d.brand).length === 1) chosen = modelsOf(d.brand)[0].id;
+    const p0 = priceOf(S.month, d.id); let price = p0.sell ? String(p0.sell) : "";
+    const box = document.createElement("div"); box.className="sheet"; box.setAttribute("role","dialog"); box.setAttribute("aria-modal","true"); box.setAttribute("aria-label","Sell "+d.no);
+    box.innerHTML = `<div class="box"></div>`; document.body.appendChild(box); sheetEl = box;
+    const close = () => { box.remove(); sheetEl=null; document.removeEventListener("keydown", onKey); };
+    const onKey = e => { if (e.key==="Escape") close(); }; document.addEventListener("keydown", onKey);
+    box.addEventListener("click", e => { if (e.target===box) close(); });
+    const saveLabel = () => { const pr = N(price); const mn = chosen ? (modelsOf(d.brand).find(m=>m.id===chosen)?.name || "") : "";
+      return chosen ? `Record ${qty} sold · ${esc(mn)}${pr ? " · " + kshRaw(pr*qty) : ""}` : "Pick the " + varLabel(d.brand).toLowerCase(); };
+    const priceNote = () => { const pr = N(price); if (!p0.sell || !pr) return ""; const diff = pr - p0.sell;
+      return diff === 0 ? "Usual price" : diff < 0 ? `${kshRaw(-diff)} below the usual ${kshRaw(p0.sell)}` : `${kshRaw(diff)} above the usual ${kshRaw(p0.sell)}`; };
+    const draw = () => {
+      memo = {};
+      const mods = modelsOf(d.brand).map(mo => ({ mo, left: leftOf(S.month, d.id, mo.id) }));
+      const vis = showAll ? mods : mods.filter(x => x.left > 0);
+      box.firstElementChild.innerHTML = `
+        <div class="row" style="gap:14px;align-items:flex-start">
+          ${picTag(d).replace('class="pic"','class="pic" style="width:84px;height:112px"')}
+          <div style="flex:1;min-width:0"><div class="no" style="font-size:1.6rem">${esc(d.no)}</div><div style="font-weight:700">${esc(d.name)}</div>
+            <div class="muted" style="font-size:.85rem">${p0.sell? "Usual price "+kshRaw(p0.sell) : "No usual price set yet"}</div></div>
+          <button class="btn ghost small" data-x="close">Close</button>
+        </div>
+        <div${modelsOf(d.brand).length===1?' hidden':''}><div class="eyebrow" style="margin-bottom:6px">${varLabel(d.brand)}</div>
+          <div class="chips">${vis.map(x => `<button class="chip${x.left<=0?" out":""}" data-mod="${esc(x.mo.id)}" aria-pressed="${chosen===x.mo.id}">${esc(x.mo.name)}<small>${x.left} left</small></button>`).join("") || `<span class="muted">None in stock for any model this month. Tap “Show all models” if you sold one anyway.</span>`}</div>
+          <button class="btn ghost small" style="margin-top:8px" data-x="all">${showAll?"Show only ones in stock":"Show all " + (isAcc(d.brand) ? "colours" : "models")}</button></div>
+        <div class="row" style="align-items:flex-end;gap:16px">
+          <div><div class="eyebrow" style="margin-bottom:6px">How many</div><span class="stepper"><button data-x="minus" aria-label="One less">−</button><span id="qtyV">${qty}</span><button data-x="plus" aria-label="One more">+</button></span></div>
+          <label class="f" style="flex:1;min-width:160px">Sold at (KSh each)<input type="number" min="0" inputmode="numeric" id="salePrice" value="${esc(price)}" placeholder="Price you got" style="font-size:1.15rem;font-family:var(--f-num);font-weight:600;padding:10px 12px"></label>
+        </div>
+        <div class="muted" style="font-size:.82rem;margin-top:-6px" id="priceNote">${priceNote()}</div>
+        ${d.brand==="cable" ? `<label class="f">What was sold? (description)<input type="text" id="saleNote" value="${esc(note)}" placeholder="e.g. Oraimo iPhone cable, 1m, black"></label>` : ""}
+        ${chPicker(ch)}
+        <button class="btn" data-x="save" ${chosen? "": "disabled"} style="padding:14px">${saveLabel()}</button>
+        <div class="msg" id="saleMsg"></div>`;
+    };
+    box.addEventListener("input", e => { if (e.target.id === "saleNote"){ note = e.target.value; return; } if (e.target.id !== "salePrice") return; price = e.target.value;
+      box.querySelector('[data-x="save"]').innerHTML = saveLabel(); $("#priceNote").textContent = priceNote(); });
+    box.addEventListener("click", async e => {
+      const b = e.target.closest("button"); if(!b || !box.contains(b)) return;
+      if (b.dataset.mod){ chosen=b.dataset.mod; draw(); return; }
+      if (b.dataset.ch){ ch = b.dataset.ch; draw(); return; }
+      const x = b.dataset.x;
+      if (x==="close") return close();
+      if (x==="all"){ showAll=!showAll; draw(); return; }
+      if (x==="minus"){ qty=Math.max(1,qty-1); draw(); return; }
+      if (x==="plus"){ qty++; draw(); return; }
+      if (x==="save" && chosen){
+        const msg = $("#saleMsg");
+        if (!S.db){ msg.className="msg err"; msg.textContent="Not connected. Open this page signed in to claude.ai."; return; }
+        if (price === "" || N(price) < 0){ msg.className="msg err"; msg.textContent="Type the price you sold it at."; $("#salePrice").focus(); return; }
+        if (!ch){ msg.className="msg err"; msg.textContent="Choose where the sale came from: Walk-in, TikTok Live, Jumia or Kilimall."; return; }
+        b.disabled = true;
+        const m = S.month, mod = chosen, n = qty, each = Math.round(N(price)), amt = each * n;
+        const c = cell(m, d.id, mod);
+        try {
+          await writeMany(m, d.id, { [mod]: { sold: N(c.sold) + n, rev: N(c.rev) + amt, revq: N(c.revq) + n } }, null);
+        } catch(err){ b.disabled=false; msg.className="msg err"; msg.textContent="Could not save. "+(err&&err.message||"Check your connection."); return; }
+        const logDate = m === thisMonth() ? todayStr() : null;
+        const sid = "s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+        const entry = { d: d.id, mod, qty: n, each, ts: Date.now(), ch }; if (note.trim()) entry.note = note.trim().slice(0,200);
+        if (logDate) logDay(logDate, d.id, mod, n, amt, entry, sid);
+        close();
+        toast(`Sold ${n} × case ${d.no} (${modelsOf(d.brand).find(z=>z.id===mod)?.name}) for ${kshRaw(amt)}`, async () => {
+          const c2 = cell(m, d.id, mod);
+          await writeMany(m, d.id, { [mod]: { sold: Math.max(0, N(c2.sold) - n), rev: Math.max(0, N(c2.rev) - amt), revq: Math.max(0, N(c2.revq) - n) } }, null).catch(() => banner("Could not undo. Fix it on the Stock sheet.", "bad"));
+          if (logDate) logDay(logDate, d.id, mod, -n, -amt, { ...entry, void: true }, sid);
+        });
+      }
+    });
+    draw();
+    box.querySelector("button")?.focus();
+  }
+  let toastT=null;
+  function toast(text, undo){
+    document.querySelectorAll(".toast").forEach(t=>t.remove());
+    const t=document.createElement("div"); t.className="toast"; t.setAttribute("role","status");
+    t.innerHTML=`<span></span>${undo?'<button type="button">Undo</button>':""}`; t.firstElementChild.textContent=text;
+    if (undo) t.querySelector("button").addEventListener("click", () => { undo(); t.remove(); });
+    document.body.appendChild(t); clearTimeout(toastT); toastT=setTimeout(()=>t.remove(), 7000);
+  }
+
+  /* ---------- STOCK SHEET ---------- */
+  let gridKey = "";
+  $("#onlyStocked").checked = S.onlyStocked;
+  $("#onlyStocked").addEventListener("change", e => { S.onlyStocked=e.target.checked; ls.set("fh2-only", S.onlyStocked?"1":"0"); gridKey=""; renderSheet(); });
+  function visibleModels(brand){
+    const mods = modelsOf(brand);
+    if (!S.onlyStocked) return mods;
+    const v = mods.filter(mo => designsOf(brand).some(d => stocked(S.month, d.id, mo.id)));
+    return v.length ? v : mods;
+  }
+  let stockView = ls.get("fh2-sview") || "model", stockBrand = ls.get("fh2-sbrand") || "iphone", stockFind = "";
+  function renderSheet(){
+    memo = {};
+    const m = S.month;
+    $("#sheetTitle").textContent = "Stock · " + mLong(m);
+    document.querySelectorAll("#stockView button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v===stockView));
+    document.querySelectorAll("#stockBrand button").forEach(b => b.setAttribute("aria-pressed", b.dataset.b===stockBrand));
+    $("#stockCardsWrap").hidden = stockView !== "cards"; $("#sheetWrap").hidden = stockView !== "sheet"; $("#stockModelWrap").hidden = stockView !== "model";
+    $("#stockEyebrow").textContent = stockView==="model" ? "Pick a phone model, then fill in every design for it" : stockView==="cards" ? "Tap a case to add new stock or correct the count" : "Everything for the month in one sheet";
+    let units = 0, value = 0; S.designs.forEach(d => { const p = priceOf(m, d.id); modelsOf(d.brand).forEach(mo => { const l = Math.max(0, leftOf(m, d.id, mo.id)); units += l; value += l * p.buy; }); });
+    const added = S.designs.reduce((a, d) => a + modelsOf(d.brand).reduce((b, mo) => b + N(cell(m, d.id, mo.id).added), 0), 0);
+    $("#stockTiles").innerHTML = [["Cases in stock", units.toLocaleString(), "all models", "var(--violet)"],["New stock this month", added.toLocaleString(), "cases added", "var(--good)"],["Stock value", ksh(value), "at buying price", "var(--plum-2)"],["Running low", String(lowCount(m)), "models with 2 or fewer", "var(--warn)"]]
+      .map(([l,v,sub,tone]) => `<div class="tile" style="--tone:${tone}"><span class="eyebrow">${l}</span><span class="v">${v}</span><span class="sub">${sub}</span></div>`).join("");
+    if (stockView === "model") { renderStockModel(); return; }
+    if (stockView === "cards") { renderStockCards(); return; }
+    renderGrid();
+  }
+  let smBrand = ls.get("fh2-smb") || "iphone", smModel = ls.get("fh2-smm") || "", smMode = "add", smVals = {}, smFind = "";
+  async function writeModelCells(m, cells){
+    if (!S.db) throw new Error("Not connected");
+    const ref = S.db.doc("months/" + m);
+    return queue("m" + m, async () => {
+      if (S.months[m] || CREATED[m]) await ref.update({ cells }); else { await ref.set({ cells, prices: {} }); CREATED[m] = true; }
+    });
+  }
+  const smChanged = () => Object.entries(smVals).filter(([d, v]) => v !== "" && v !== undefined && (smMode==="add" ? N(v) > 0 : N(v) !== leftOf(S.month, d, smModel)));
+  function smSaveLabel(){ const ch = smChanged(); const total = ch.reduce((a,[d,v]) => a + N(v), 0);
+    return ch.length ? (smMode==="add" ? `Add ${total} case${total===1?"":"s"} (${ch.length} design${ch.length===1?"":"s"})` : `Save ${ch.length} count${ch.length===1?"":"s"}`) : "Nothing to save yet"; }
+  function renderStockModel(){
+    const wrap = $("#stockModelWrap"); const m = S.month; memo = {};
+    if (!S.designs.length || !modelsOf("iphone").length){ wrap.innerHTML = `<div class="empty">Loading…</div>`; return; }
+    const mods = modelsOf(smBrand); if (smModel && !mods.some(x => x.id===smModel)) smModel = "";
+    const act = document.activeElement, actId = act && act.id, caret = act && act.selectionStart;
+    const des = designsOf(smBrand);
+    const modelTotal = mo => des.reduce((a,d) => a + Math.max(0, leftOf(m, d.id, mo.id)), 0);
+    let h = `<div class="panel" style="display:flex;flex-direction:column;gap:14px">
+      <div class="row" style="justify-content:space-between"><h3>1. Choose the phone model</h3>
+        <div class="seg" id="smBrand"><button data-smb="iphone" aria-pressed="${smBrand==="iphone"}">iPhone</button><button data-smb="samsung" aria-pressed="${smBrand==="samsung"}">Samsung</button></div></div>
+      <div class="mchips">${mods.map(mo => `<button class="mchip" data-pm="${esc(mo.id)}" aria-pressed="${smModel===mo.id}">${esc(mo.name)}<small>${modelTotal(mo)}</small></button>`).join("")}</div>
+      <div class="muted" style="font-size:.8rem">The small number is how many cases you have for that model now.</div></div>`;
+    if (!smModel){ wrap.innerHTML = h + `<div class="panel empty">Pick a phone model above. All your ${smBrand==="iphone"?"iPhone":"Samsung"} designs will appear so you can type how many you have of each.</div>`; return; }
+    const mo = mods.find(x => x.id===smModel); const q = smFind.trim().toLowerCase();
+    const list = des.filter(d => !q || String(d.no).toLowerCase()===q || d.name.toLowerCase().includes(q));
+    h += `<div class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <div class="row" style="justify-content:space-between"><h3>2. ${smBrand==="iphone"?"iPhone":"Samsung"} ${esc(mo.name)} · ${modelTotal(mo)} in stock</h3>
+        <input type="search" id="smFind" value="${esc(smFind)}" placeholder="Find a design" aria-label="Find a design" style="width:170px"></div>
+      <div class="seg" role="group" aria-label="What are you doing"><button data-smmode="add" aria-pressed="${smMode==="add"}">New stock arrived</button><button data-smmode="set" aria-pressed="${smMode==="set"}">Correct the count</button></div>
+      <div class="muted" style="font-size:.86rem">${smMode==="add" ? "Type how many NEW cases came in for each design. Leave the rest empty." : "Type how many you actually have on the shelf now for each design. Empty boxes stay as they are."}</div></div>
+      <div class="dlist">${list.map(d => { const left = leftOf(m, d.id, smModel); const v = smVals[d.id] ?? ""; const on = v!=="" && (smMode==="add" ? N(v)>0 : N(v)!==left);
+        return `<div class="drow${on?" on":""}">${picTag(d)}<div class="info"><div class="nm"><span class="no">${esc(d.no)}</span>${esc(d.name)}</div><div class="have">${left} in stock now</div></div>
+          <span class="mini"><button type="button" data-sstep="-1" data-sd="${esc(d.id)}" aria-label="One less, case ${esc(d.no)}">−</button><input type="number" min="0" inputmode="numeric" id="sm-${esc(d.id)}" data-sd="${esc(d.id)}" value="${esc(v)}" placeholder="${smMode==="add" ? "0" : left}" aria-label="${smMode==="add"?"New cases":"Cases on shelf"}, case ${esc(d.no)}"><button type="button" data-sstep="1" data-sd="${esc(d.id)}" aria-label="One more, case ${esc(d.no)}">+</button></span></div>`; }).join("") || `<div class="empty">No design matches “${esc(smFind)}”.</div>`}</div>
+      <div class="savebar"><button class="btn" id="smSave" ${smChanged().length ? "" : "disabled"}>${smSaveLabel()}</button><span id="smMsg" style="font-size:.88rem;font-weight:600"></span></div>`;
+    wrap.innerHTML = h;
+    if (actId){ const el = document.getElementById(actId); if (el){ el.focus({preventScroll:true}); try { if (caret!=null) el.setSelectionRange(caret, caret); } catch(e){} } }
+  }
+  $("#stockModelWrap").addEventListener("click", async e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.smb){ smBrand = b.dataset.smb; ls.set("fh2-smb", smBrand); smModel = ""; smVals = {}; renderStockModel(); return; }
+    if (b.dataset.pm){ if (smModel !== b.dataset.pm){ smVals = {}; } smModel = b.dataset.pm; ls.set("fh2-smm", smModel); renderStockModel(); return; }
+    if (b.dataset.smmode){ smMode = b.dataset.smmode; smVals = {}; renderStockModel(); return; }
+    if (b.dataset.sstep){ const d = b.dataset.sd; const base = smVals[d]!==undefined && smVals[d]!=="" ? N(smVals[d]) : (smMode==="set" ? leftOf(S.month, d, smModel) : 0);
+      smVals[d] = String(Math.max(0, base + N(b.dataset.sstep))); renderStockModel(); return; }
+    if (b.id === "smSave"){
+      const ch = smChanged(); if (!ch.length) return;
+      const msg = $("#smMsg"); if (!S.db){ msg.textContent = "Not connected. Open this page signed in to claude.ai."; return; }
+      b.disabled = true; const m = S.month, mod = smModel, cells = {};
+      ch.forEach(([d, v]) => { const c = cell(m, d, mod); cells[d] = { [mod]: smMode==="add" ? { added: N(c.added) + N(v) } : { start: N(v) - N(c.added) + N(c.sold) } }; });
+      try { await writeModelCells(m, cells); const total = ch.reduce((a,[d,v]) => a + N(v), 0); const mn = (modelsOf(smBrand).find(x=>x.id===mod)||{}).name;
+        smVals = {}; renderStockModel(); toast(smMode==="add" ? `Added ${total} case${total===1?"":"s"} for ${mn}` : `Updated ${ch.length} count${ch.length===1?"":"s"} for ${mn}`); }
+      catch(err){ b.disabled = false; msg.textContent = "Could not save. " + (err && err.message || "Check your connection."); }
+    }
+  });
+  $("#stockModelWrap").addEventListener("input", e => {
+    const t = e.target;
+    if (t.id === "smFind"){ smFind = t.value; renderStockModel(); return; }
+    if (t.dataset.sd){ smVals[t.dataset.sd] = t.value === "" ? "" : String(Math.max(0, Math.floor(N(t.value))));
+      const row = t.closest(".drow"), left = leftOf(S.month, t.dataset.sd, smModel), v = smVals[t.dataset.sd];
+      row.classList.toggle("on", v!=="" && (smMode==="add" ? N(v)>0 : N(v)!==left));
+      const sb = $("#smSave"); sb.textContent = smSaveLabel(); sb.disabled = !smChanged().length; }
+  });
+  $("#stockModelWrap").addEventListener("keydown", e => {
+    if (e.key !== "Enter" || !e.target.dataset.sd) return; e.preventDefault();
+    const all = [...document.querySelectorAll("#stockModelWrap input[data-sd]")]; const i = all.indexOf(e.target); if (all[i+1]) all[i+1].focus();
+  });
+  function renderStockCards(){
+    const m = S.month, q = stockFind.trim().toLowerCase();
+    if (!S.designs.length){ $("#stockCards").innerHTML = `<div class="empty">Loading your cases…</div>`; return; }
+    const list = designsOf(stockBrand).filter(d => !q || String(d.no).toLowerCase()===q || d.name.toLowerCase().includes(q));
+    $("#stockCards").innerHTML = list.map(d => {
+      const lf = designLeft(m, d), low = modelsOf(d.brand).filter(mo => stocked(m, d.id, mo.id) && leftOf(m, d.id, mo.id) <= 2).length;
+      const badge = lf <= 0 ? `<span class="badge none">Empty</span>` : low ? `<span class="badge">${low} low</span>` : "";
+      return `<button class="card" data-d="${esc(d.id)}" aria-label="Stock for case ${esc(d.no)} ${esc(d.name)}">${picTag(d)}<span class="no">${esc(d.no)}</span>${badge}<span class="nm">${esc(d.name)}</span><span class="lft" style="color:${lf>0?"var(--good)":"var(--muted)"}">${lf>0? lf+" in stock" : "None in stock"}</span></button>`;
+    }).join("") || `<div class="empty">No case matches “${esc(stockFind)}”.</div>`;
+  }
+  $("#stockView").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; stockView=b.dataset.v; ls.set("fh2-sview",stockView); renderSheet(); });
+  $("#stockBrand").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; stockBrand=b.dataset.b; ls.set("fh2-sbrand",stockBrand); renderStockCards(); });
+  $("#stockFind").addEventListener("input", e => { stockFind=e.target.value; renderStockCards(); });
+  $("#stockCards").addEventListener("click", e => { const c=e.target.closest(".card"); if(c) openStock(c.dataset.d); });
+
+  function openStock(did){
+    const d = S.designs.find(x => x.id===did); if(!d) return;
+    const m = S.month; memo = {};
+    let mode = "add"; const vals = {}; let showAll = false;
+    const p0 = priceOf(m, d.id); let buy = p0.buy || "", sell = p0.sell || "";
+    const box = document.createElement("div"); box.className="sheet"; box.setAttribute("role","dialog"); box.setAttribute("aria-modal","true"); box.setAttribute("aria-label","Stock for case "+d.no);
+    box.innerHTML = `<div class="box"></div>`; document.body.appendChild(box); sheetEl = box;
+    const close = () => { box.remove(); sheetEl=null; document.removeEventListener("keydown", onKey); };
+    const onKey = e => { if (e.key==="Escape") close(); }; document.addEventListener("keydown", onKey);
+    box.addEventListener("click", e => { if (e.target===box) close(); });
+    const mods = () => { memo = {}; return modelsOf(d.brand).map(mo => ({ mo, left: leftOf(m, d.id, mo.id), st: stocked(m, d.id, mo.id) })); };
+    const changed = () => Object.entries(vals).filter(([k,v]) => mode==="add" ? N(v) > 0 : (v !== "" && v !== undefined && N(v) !== leftOf(m, d.id, k)));
+    const draw = () => {
+      const list = mods(); const anyStock = list.some(x => x.st);
+      const vis = (mode==="add" || showAll || !anyStock) ? list : list.filter(x => x.st);
+      const ch = changed(); const total = ch.reduce((a,[k,v]) => a + (mode==="add" ? N(v) : 1), 0);
+      box.firstElementChild.innerHTML = `
+        <div class="row" style="gap:14px;align-items:flex-start">
+          ${picTag(d).replace('class="pic"','class="pic" style="width:76px;height:100px"')}
+          <div style="flex:1;min-width:0"><div class="no" style="font-size:1.5rem">${esc(d.no)}</div><div style="font-weight:700">${esc(d.name)}</div>
+            <div class="muted" style="font-size:.85rem">${designLeft(m, d)} in stock · ${esc(mLong(m))}</div></div>
+          <button class="btn ghost small" data-x="close">Close</button>
+        </div>
+        <div class="seg" role="group" aria-label="What are you doing"><button data-mode="add" aria-pressed="${mode==="add"}">New stock arrived</button><button data-mode="set" aria-pressed="${mode==="set"}">Correct the count</button></div>
+        <div class="muted" style="font-size:.85rem">${mode==="add" ? "Type or tap + for how many new cases came in for each phone model." : "Type how many you actually have on the shelf now for each model. Use this the first time, or after counting your stock."}</div>
+        <div class="prices">
+          <label class="f">Bought at (KSh each)<input type="number" min="0" inputmode="numeric" id="stBuy" value="${esc(buy)}" placeholder="e.g. 450"></label>
+          <label class="f">Sells at (KSh each)<input type="number" min="0" inputmode="numeric" id="stSell" value="${esc(sell)}" placeholder="e.g. 1200"></label>
+        </div>
+        <div class="mrows">${vis.map(x => { const v = vals[x.mo.id] ?? (mode==="set" ? "" : ""); const ph = mode==="set" ? String(x.left) : "0";
+          const on = mode==="add" ? N(v)>0 : (v!=="" && v!==undefined && N(v)!==x.left);
+          return `<div class="mrow${on?" on":""}"><div class="mn">${esc(x.mo.name)}<small>${x.left} in stock</small></div>
+            <span class="mini"><button type="button" data-step="-1" data-mod="${esc(x.mo.id)}" aria-label="One less for ${esc(x.mo.name)}">−</button><input type="number" min="0" inputmode="numeric" data-mod="${esc(x.mo.id)}" value="${esc(v)}" placeholder="${ph}" aria-label="${mode==="add"?"New cases":"Cases on shelf"} for ${esc(x.mo.name)}"><button type="button" data-step="1" data-mod="${esc(x.mo.id)}" aria-label="One more for ${esc(x.mo.name)}">+</button></span></div>`; }).join("")}</div>
+        ${mode==="set" && anyStock ? `<button class="btn ghost small" data-x="all" style="align-self:flex-start">${showAll?"Show only models I stock":"Show all phone models"}</button>` : ""}
+        <div class="sheetfoot"><button class="btn" data-x="save" style="padding:13px 20px">${ch.length ? (mode==="add" ? `Add ${total} case${total===1?"":"s"} to stock` : `Save ${ch.length} count${ch.length===1?"":"s"}`) : "Save prices"}</button><span class="msg" id="stMsg"></span></div>`;
+    };
+    box.addEventListener("input", e => {
+      const t = e.target;
+      if (t.id==="stBuy") { buy = t.value; return; } if (t.id==="stSell") { sell = t.value; return; }
+      if (t.dataset.mod) { vals[t.dataset.mod] = t.value === "" ? "" : String(Math.max(0, Math.floor(N(t.value)))); const row=t.closest(".mrow"); const x = leftOf(m, d.id, t.dataset.mod);
+        row.classList.toggle("on", mode==="add" ? N(vals[t.dataset.mod])>0 : (vals[t.dataset.mod]!=="" && N(vals[t.dataset.mod])!==x));
+        const ch = changed(), total = ch.reduce((a,[k,v]) => a + (mode==="add" ? N(v) : 1), 0);
+        box.querySelector('[data-x="save"]').textContent = ch.length ? (mode==="add" ? `Add ${total} case${total===1?"":"s"} to stock` : `Save ${ch.length} count${ch.length===1?"":"s"}`) : "Save prices"; }
+    });
+    box.addEventListener("click", async e => {
+      const b = e.target.closest("button"); if(!b || !box.contains(b)) return;
+      if (b.dataset.mode){ mode=b.dataset.mode; for (const k in vals) delete vals[k]; draw(); return; }
+      if (b.dataset.step){ const k=b.dataset.mod; const base = vals[k]!==undefined && vals[k]!=="" ? N(vals[k]) : (mode==="set" ? leftOf(m, d.id, k) : 0); vals[k]=String(Math.max(0, base + N(b.dataset.step))); draw();
+        const inp = box.querySelector(`input[data-mod="${CSS.escape(k)}"]`); if (inp) inp.focus(); return; }
+      const x = b.dataset.x;
+      if (x==="close") return close();
+      if (x==="all"){ showAll=!showAll; draw(); return; }
+      if (x==="save"){
+        if (!S.db){ $("#stMsg").className="msg err"; $("#stMsg").textContent="Not connected. Open this page signed in to claude.ai."; return; }
+        b.disabled = true;
+        const ch = changed(); const cp = {};
+        ch.forEach(([k,v]) => { const c = cell(m, d.id, k);
+          if (mode==="add") cp[k] = { added: N(c.added) + N(v) };
+          else cp[k] = { start: N(v) - N(c.added) + N(c.sold) };
+        });
+        const nb = Math.max(0, Math.round(N(buy))), ns = Math.max(0, Math.round(N(sell)));
+        const pp = (nb !== p0.buy || ns !== p0.sell) ? { buy: nb, sell: ns } : null;
+        try {
+          await writeMany(m, d.id, cp, pp);
+          const total = ch.reduce((a,[k,v]) => a + (mode==="add" ? N(v) : 1), 0);
+          close();
+          toast(ch.length ? (mode==="add" ? `Added ${total} case${total===1?"":"s"} of case ${d.no}` : `Updated ${ch.length} count${ch.length===1?"":"s"} for case ${d.no}`) : `Prices saved for case ${d.no}`);
+        } catch(err){ b.disabled=false; $("#stMsg").className="msg err"; $("#stMsg").textContent="Could not save. "+(err&&err.message||"Check your connection."); }
+      }
+    });
+    draw();
+    box.querySelector("button")?.focus();
+  }
+
+  function renderGrid(){
+    if (!S.designs.length || !modelsOf("iphone").length){ $("#gridBox").innerHTML = `<div class="empty">Loading…</div>`; return; }
+    const ipM = visibleModels("iphone"), sgM = visibleModels("samsung");
+    const key = [S.month, S.onlyStocked, S.designs.map(d=>d.id+d.photo+d.name).join(), ipM.map(m=>m.id).join(), sgM.map(m=>m.id).join()].join("#");
+    if (key !== gridKey){ gridKey = key; buildGrid(ipM, sgM); }
+    fillGrid();
+  }
+  const FIX = ["Bought at","Sells at","Sold","Sales","Profit","Rank"];
+  function buildGrid(ipM, sgM){
+    const cols = Math.max(ipM.length, sgM.length);
+    let h = `<table class="g"><thead><tr class="r1"><th class="fx" rowspan="1">Case</th>${FIX.map(f=>`<th>${f}</th>`).join("")}`;
+    for (let j=0;j<ipM.length;j++) h += `<th colspan="4" class="grp">iPhone ${esc(ipM[j].name)}</th>`;
+    h += `</tr><tr class="r2"><th class="fx"></th>${FIX.map(()=>"<th></th>").join("")}`;
+    for (let j=0;j<ipM.length;j++) h += `<th class="grp">Start</th><th>Added</th><th>Sold</th><th>Left</th>`;
+    h += `</tr></thead><tbody>`;
+    const rowHtml = (d, mods) => {
+      let r = `<tr data-row="${esc(d.id)}"><td class="fx"><div class="dcell">${picTag(d)}<div><div class="no">${esc(d.no)}</div><div class="nm">${esc(d.name)}</div></div></div></td>
+        <td class="m"><input class="price" type="number" min="0" step="1" inputmode="numeric" data-price="buy" data-d="${esc(d.id)}" id="pb-${esc(d.id)}" aria-label="Bought at, case ${esc(d.no)}"></td>
+        <td class="m"><input class="price" type="number" min="0" step="1" inputmode="numeric" data-price="sell" data-d="${esc(d.id)}" id="ps-${esc(d.id)}" aria-label="Sells at, case ${esc(d.no)}"></td>
+        <td class="m" data-k="sold"></td><td class="m" data-k="rev"></td><td class="m" data-k="profit"></td><td class="m" data-k="rank" style="color:var(--accent);font-weight:700"></td>`;
+      mods.forEach(mo => {
+        const base = `data-d="${esc(d.id)}" data-mod="${esc(mo.id)}"`, lab = `case ${esc(d.no)} ${esc(mo.name)}`;
+        r += `<td class="s grp"><input type="number" min="0" inputmode="numeric" ${base} data-f="start" id="c-${esc(d.id)}-${esc(mo.id)}-s" aria-label="Start, ${lab}"></td>
+          <td class="a"><input type="number" min="0" inputmode="numeric" ${base} data-f="added" id="c-${esc(d.id)}-${esc(mo.id)}-a" aria-label="Added, ${lab}"></td>
+          <td class="o"><input type="number" min="0" inputmode="numeric" ${base} data-f="sold" id="c-${esc(d.id)}-${esc(mo.id)}-o" aria-label="Sold, ${lab}"></td>
+          <td class="l" ${base} data-left></td>`;
+      });
+      return r + `</tr>`;
+    };
+    designsOf("iphone").forEach(d => h += rowHtml(d, ipM));
+    h += `<tr class="sec"><td class="fx" colspan="7" style="position:sticky;left:0">Samsung cases</td><td colspan="${cols*4}" style="background:var(--sunk)"></td></tr>`;
+    h += `<tr class="r2"><td class="fx" style="background:var(--sunk)"></td>${FIX.map(()=>`<td style="background:var(--sunk)"></td>`).join("")}${sgM.map(mo=>`<td colspan="4" class="grp" style="background:var(--ink);color:var(--surface);font-size:.72rem;font-weight:700;padding:6px 4px">Samsung ${esc(mo.name)}</td>`).join("")}</tr>`;
+    h += `<tr><td class="fx" style="background:var(--sunk)"></td>${FIX.map(()=>`<td style="background:var(--sunk)"></td>`).join("")}${sgM.map(()=>`<td class="grp" style="background:var(--sunk);font-size:.64rem;font-weight:700">Start</td><td style="background:var(--sunk);font-size:.64rem;font-weight:700">Added</td><td style="background:var(--sunk);font-size:.64rem;font-weight:700">Sold</td><td style="background:var(--sunk);font-size:.64rem;font-weight:700">Left</td>`).join("")}</tr>`;
+    designsOf("samsung").forEach(d => h += rowHtml(d, sgM));
+    h += `<tr class="tot"><td class="fx" style="font-weight:800">Month total</td><td class="m"></td><td class="m"></td><td class="m" id="tSold" style="font-weight:800"></td><td class="m" id="tRev" style="font-weight:800"></td><td class="m" id="tProfit" style="font-weight:800"></td><td class="m"></td></tr>`;
+    h += `</tbody></table>`;
+    const box = $("#gridBox"); const sl=box.scrollLeft, st=box.scrollTop; box.innerHTML = h; box.scrollLeft=sl; box.scrollTop=st;
+  }
+  function fillGrid(){
+    const box = $("#gridBox"); const m = S.month; const act = document.activeElement;
+    const ranks = rankMap(m);
+    let tSold=0,tRev=0,tProf=0;
+    box.querySelectorAll("tr[data-row]").forEach(tr => {
+      const d = tr.dataset.row, p = priceOf(m, d), q = soldOf(m, d);
+      const rv = designRev(m, d); tSold+=q; tRev+=rv; tProf+=rv-q*p.buy;
+      const pb = tr.querySelector('[data-price="buy"]'), ps = tr.querySelector('[data-price="sell"]');
+      if (pb!==act) pb.value = p.buy || ""; if (ps!==act) ps.value = p.sell || "";
+      tr.querySelector('[data-k="sold"]').textContent = q || "–";
+      tr.querySelector('[data-k="rev"]').textContent = q ? ksh(rv) : "–";
+      tr.querySelector('[data-k="profit"]').textContent = q ? ksh(rv-q*p.buy) : "–";
+      tr.querySelector('[data-k="rank"]').textContent = ranks[d] || "";
+    });
+    box.querySelectorAll("input[data-f]").forEach(inp => {
+      if (inp===act) return;
+      const c = cell(m, inp.dataset.d, inp.dataset.mod), f = inp.dataset.f;
+      if (f==="start"){ const own = c.start; inp.value = (own===undefined||own===null||own==="") ? "" : own; inp.placeholder = String(startOf(m, inp.dataset.d, inp.dataset.mod)); }
+      else inp.value = N(c[f]) || "";
+    });
+    box.querySelectorAll("td[data-left]").forEach(td => {
+      const v = leftOf(m, td.dataset.d, td.dataset.mod); td.textContent = v;
+      td.className = "l" + (v<0?" neg": v===0?" z": v<=2?" lo":"");
+    });
+    const set=(id,v)=>{const e=$(id); if(e) e.textContent=v;};
+    set("#tSold", tSold); set("#tRev", ksh(tRev)); set("#tProfit", ksh(tProf));
+  }
+  function rankMap(m){
+    const arr = S.designs.map(d => ({ id:d.id, q: soldOf(m, d.id) })).filter(x => x.q>0).sort((a,b)=>b.q-a.q);
+    const r = {}; arr.forEach(x => r[x.id] = 1 + arr.filter(y => y.q > x.q).length); return r;
+  }
+  $("#gridBox").addEventListener("change", e => {
+    const inp = e.target;
+    if (inp.dataset.price){ const v = Math.max(0, Math.round(N(inp.value))); writePrice(S.month, inp.dataset.d, inp.dataset.price, v); return; }
+    if (!inp.dataset.f) return;
+    const f = inp.dataset.f;
+    if (f==="start" && inp.value===""){ writeCell(S.month, inp.dataset.d, inp.dataset.mod, "start", null); return; }
+    const v = Math.max(0, Math.floor(N(inp.value))); inp.value = v || (f==="start" ? 0 : "");
+    if (f === "sold" && S.month === thisMonth()) { const before = N(cell(S.month, inp.dataset.d, inp.dataset.mod).sold); if (v !== before) logDay(todayStr(), inp.dataset.d, inp.dataset.mod, v - before); }
+    writeCell(S.month, inp.dataset.d, inp.dataset.mod, f, v);
+  });
+  $("#gridBox").addEventListener("focusin", e => { if (e.target.matches("input")) e.target.select(); });
+  $("#gridBox").addEventListener("keydown", e => {
+    if (e.key!=="Enter" || !e.target.matches("input")) return; e.preventDefault();
+    const td=e.target.closest("td"), tr=td.parentElement, i=[...tr.children].indexOf(td); e.target.blur();
+    let nx=tr.nextElementSibling; while(nx && !nx.dataset.row) nx=nx.nextElementSibling;
+    const ni = nx && nx.children[i] && nx.children[i].querySelector("input"); if (ni) ni.focus();
+  });
+
+  /* ---------- RESTOCK ---------- */
+  function renderRestock(){
+    memo = {};
+    const m = S.month, prev = shift(m, -1), items = [];
+    S.designs.forEach(d => modelsOf(d.brand).forEach(mo => {
+      if (!stocked(m, d.id, mo.id)) return;
+      const left = leftOf(m, d.id, mo.id); if (left > 2) return;
+      const sold = N(cell(m, d.id, mo.id).sold), soldPrev = N(cell(prev, d.id, mo.id).sold);
+      items.push({ d, mo, left, sold, score: sold * 3 + soldPrev + (left <= 0 ? 2 : 0) - left * 0.5 });
+    }));
+    items.sort((a,b) => b.score - a.score || a.left - b.left);
+    $("#restockList").innerHTML = items.length ? items.map((x,i) => `<div class="rs${i===0?" first":""}">
+        <div class="rk">${i+1}</div>${picTag(x.d)}<div style="min-width:0;flex:1">
+        <div class="row" style="gap:8px"><span class="no" style="font-size:1.15rem">${esc(x.d.no)}</span><span style="font-weight:700;font-size:.9rem">${esc(x.d.name)}</span></div>
+        <div style="font-weight:700;font-size:1rem;margin-top:2px">${isAcc(x.d.brand) ? esc(x.mo.name) : brandName(x.d.brand) + " " + esc(x.mo.name)}</div>
+        <div class="row" style="gap:8px;margin-top:6px"><span class="lowchips" style="margin:0"><span class="${x.left<=0?"out":""}">${x.left<=0 ? "None left" : x.left + " left"}</span></span>
+          <span class="muted" style="font-size:.8rem">${x.sold} sold this month</span>${i===0?'<span class="pill-first">Restock first</span>':""}</div>
+      </div></div>`).join("")
+      : `<div class="panel empty">Nothing needs restocking. Cases with 2 or fewer left for a phone model will show here, most needed first.</div>`;
+  }
+
+  /* ---------- BEST SELLERS ---------- */
+  let trP = ls.get("fh2-trp") || "all";
+  document.querySelectorAll("#trPeriod button").forEach(b => b.addEventListener("click", () => { trP = b.dataset.p; ls.set("fh2-trp", trP); renderTrends(); }));
+  let avgOpen = false, avgSort = "sold";
+  $("#avgBtn").addEventListener("click", () => { avgOpen = !avgOpen; renderTrends(); if (avgOpen) $("#trAvg").scrollIntoView({ behavior: "smooth", block: "start" }); });
+  $("#avgClose").addEventListener("click", () => { avgOpen = false; renderTrends(); });
+  document.querySelectorAll("#avgSort button").forEach(b => b.addEventListener("click", () => { avgSort = b.dataset.s; renderAvg(trP==="month" ? [S.month] : monthKeys().filter(k => k <= S.month)); }));
+  function renderAvg(months){
+    document.querySelectorAll("#avgSort button").forEach(b => b.setAttribute("aria-pressed", b.dataset.s===avgSort));
+    const rows = [];
+    S.designs.forEach(d => {
+      let rev = 0, q = 0;
+      months.forEach(k => modelsOf(d.brand).forEach(mo => { const c = cell(k, d.id, mo.id); if (N(c.revq)) { rev += N(c.rev); q += N(c.revq); } }));
+      if (!q) return;
+      let lo = Infinity, hi = 0, lq = 0, lrev = 0;
+      Object.entries(S.days || {}).forEach(([dt, day]) => { if (!months.includes(dt.slice(0,7))) return;
+        Object.values((day && day.log) || {}).forEach(l => { if (l.void || l.d !== d.id) return; const e = N(l.each); if (e > 0){ lo = Math.min(lo, e); hi = Math.max(hi, e); lq += N(l.qty) || 1; lrev += e * (N(l.qty) || 1); } }); });
+      if (q > lq && rev > lrev){ const e = (rev - lrev) / (q - lq); lo = Math.min(lo, e); hi = Math.max(hi, e); } // older sales without their own line
+      if (lo > hi) lo = hi;
+      rows.push({ d, q, rev, avg: rev / q, lo: lo === Infinity ? 0 : lo, hi });
+    });
+    const cases = rows.filter(r => !isAcc(r.d.brand)), cq = cases.reduce((a,r) => a + r.q, 0), crev = cases.reduce((a,r) => a + r.rev, 0);
+    const p = r => "KSh " + Math.round(r).toLocaleString("en-KE");
+    const top = [...cases].sort((a,b) => b.avg - a.avg)[0], bot = [...cases].sort((a,b) => a.avg - b.avg)[0];
+    $("#avgSum").innerHTML = cq ? `<div style="grid-column:1/-1"><span>Average for all cases = total sales ÷ cases sold</span><b>${p(crev)} ÷ ${cq} = ${p(crev/cq)}</b></div>
+      <div><span>Highest average</span><b>${p(top.avg)}</b><span>No. ${esc(top.d.no)}</span></div>
+      <div><span>Lowest average</span><b>${p(bot.avg)}</b><span>No. ${esc(bot.d.no)}</span></div>
+      <div><span>Cases counted</span><b>${cq}</b></div>` : "";
+    rows.sort(avgSort==="high" ? (a,b) => b.avg - a.avg : avgSort==="low" ? (a,b) => a.avg - b.avg : (a,b) => b.q - a.q || b.avg - a.avg);
+    $("#avgList").innerHTML = rows.length ? rows.map(r => `<div class="ar">${picTag(r.d)}<div style="min-width:0"><div class="nm"><span class="no">${esc(r.d.no)}</span> ${esc(r.d.name)}</div>
+        <div class="meta">${isAcc(r.d.brand) ? brandName(r.d.brand) + " · " : ""}${r.q} sold${r.hi ? ` · lowest ${p(r.lo)} · highest ${p(r.hi)}` : ""}</div></div>
+        <div class="av"><b>${p(r.avg)}</b><small>${p(r.rev)} ÷ ${r.q}</small></div></div>`).join("")
+      : `<div class="empty muted">No sales with a price yet.</div>`;
+  }
+  function renderTrends(){
+    memo = {};
+    document.querySelectorAll("#trPeriod button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p===trP));
+    const months = trP==="month" ? [S.month] : monthKeys().filter(k => k <= S.month);
+    const m = S.month, check = [];
+    $("#trAvg").hidden = !avgOpen; $("#avgBtn").setAttribute("aria-expanded", avgOpen);
+    $("#avgBtn span").textContent = avgOpen ? "Hide average prices" : "Average selling price";
+    if (avgOpen) renderAvg(months);
+    // a sale counts when it was recorded with a price (through Sell); "sold" typed without a price is flagged below
+    const soldC = (d, mod) => months.reduce((a, k) => { const c = cell(k, d, mod), so = N(c.sold), q = Math.min(so, N(c.revq));
+      if (so > q) check.push({ d, mod, k, n: so - q }); return a + q; }, 0);
+    const cases = S.designs.filter(d => d.brand==="iphone" || d.brand==="samsung");
+    const mods = {}, des = {};
+    cases.forEach(d => modelsOf(d.brand).forEach(mo => {
+      const so = soldC(d.id, mo.id), lf = Math.max(0, leftOf(m, d.id, mo.id));
+      const km = d.brand+"|"+mo.id; (mods[km] = mods[km] || { mo, brand: d.brand, sold: 0, left: 0 }); mods[km].sold += so; mods[km].left += lf;
+      (des[d.id] = des[d.id] || { d, sold: 0, left: 0 }); des[d.id].sold += so; des[d.id].left += lf;
+    }));
+    const total = Object.values(des).reduce((a, x) => a + x.sold, 0);
+    const label = trP==="month" ? mLong(m) : "all months so far";
+    $("#trNote").innerHTML = total ? `Based on <b>${total}</b> case${total===1?"":"s"} sold in ${esc(label)}. ${total < 100 ? "That’s still a small number, so treat this as an early sign and check again as more sales come in." : ""}`
+      : `No case sales recorded in ${esc(label)} yet.`;
+    const tag = (x, rank) => { const share = x.sold / Math.max(1, x.sold + x.left);
+      if (!x.sold) return x.left ? `<span class="dead">Not selling · don’t restock</span>` : "";
+      if (rank === 0) return `<span class="hot">Most preferred</span>`;
+      if (rank < 3) return `<span class="hot">Best seller</span>`;
+      if (share < 0.05 && x.left >= 10) return `<span class="slow">Slow · don’t restock yet</span>`;
+      return `<span class="ok">Selling</span>`; };
+    const modelList = (brand, sel) => {
+      const all = modelsOf(brand).map(mo => mods[brand+"|"+mo.id] || { mo, brand, sold: 0, left: 0 });
+      const act = all.filter(x => x.sold || x.left).sort((a,b) => b.sold - a.sold || a.left - b.left);
+      const none = all.filter(x => !x.sold && !x.left);
+      const max = Math.max(1, ...act.map(x => x.sold));
+      $(sel).innerHTML = (act.length ? act.map((x,i) => `<div class="mr"><div class="mn">${esc(x.mo.name)}</div>
+          <div class="bar"><i style="width:${x.sold/max*100}%"></i></div>
+          <div class="nums"><b>${x.sold}</b> sold · ${x.left} left</div>
+          <div class="tg">${tag(x, x.sold ? i : 99)}</div></div>`).join("") : `<div class="empty muted">No ${brandName(brand)} stock or sales yet.</div>`)
+        + (none.length ? `<div class="unst">Not stocked: ${none.map(x => esc(x.mo.name)).join(", ")}</div>` : "");
+      return act;
+    };
+    const ip = modelList("iphone", "#trIphone"), sg = modelList("samsung", "#trSamsung");
+    const dl = Object.values(des).sort((a,b) => b.sold - a.sold || a.left - b.left);
+    const best = dl.filter(x => x.sold).slice(0, 12);
+    const slow = Object.values(des).filter(x => !x.sold && x.left > 0).sort((a,b) => b.left - a.left);
+    const worstM = [...ip, ...sg].filter(x => !x.sold && x.left).sort((a,b) => b.left - a.left)[0];
+    const big = (tone, eyebrow, main, sub, pic="") => `<div class="trbig" style="--tone:${tone}">${pic}<div style="min-width:0"><div class="eyebrow">${eyebrow}</div><div class="big">${main}</div><div class="sub">${sub}</div></div></div>`;
+    $("#trTop").innerHTML =
+      (best[0] ? big("var(--accent)", "Most preferred case", `No. ${esc(best[0].d.no)}`, `${esc(best[0].d.name)} · ${best[0].sold} sold`, picTag(best[0].d)) : "")
+      + (ip[0] && ip[0].sold ? big("var(--violet)", "Most preferred iPhone", `iPhone ${esc(ip[0].mo.name)}`, `${ip[0].sold} sold · ${ip[0].left} left`) : "")
+      + (sg[0] && sg[0].sold ? big("var(--good)", "Most preferred Samsung", `Samsung ${esc(sg[0].mo.name)}`, `${sg[0].sold} sold · ${sg[0].left} left`) : "")
+      + (worstM ? big("var(--bad)", "Slowest model", `${brandName(worstM.brand)} ${esc(worstM.mo.name)}`, `0 sold · ${worstM.left} sitting in stock`) : "");
+    const tc = (x, i, dead) => `<div class="tc">${picTag(x.d)}<span class="no">${esc(x.d.no)}</span>${dead ? "" : `<span class="rk">#${i+1}</span>`}
+        <div class="nm">${esc(x.d.name)}</div><div class="q${dead?" dead":""}">${dead ? `0 sold · ${x.left} in stock` : `${x.sold} sold · ${x.left} left`}</div></div>`;
+    $("#trBest").innerHTML = best.length ? best.map((x,i) => tc(x, i, false)).join("") : `<div class="empty muted">No sales yet.</div>`;
+    $("#trSlow").innerHTML = slow.length ? slow.map(x => tc(x, 0, true)).join("") : `<div class="empty muted">Every case in stock has sold at least once. 🎉</div>`;
+    $("#trCheck").innerHTML = check.length ? `<div class="panel" style="border-color:var(--warn)"><div class="phead"><h3>Please check these</h3></div>
+      <p class="muted" style="font-size:.85rem;margin:0 0 8px">These were marked as sold without a price, so they aren’t counted above. If they were mistakes, fix them in Stock with “Correct the count”.</p>
+      ${check.map(c => { const d = S.designs.find(x => x.id===c.d), mo = modelsOf(d ? d.brand : "iphone").find(x => x.id===c.mod);
+        return `<div class="sl">${d ? picTag(d) : ""}<div class="info"><div class="nm">No. ${esc(d ? d.no : "?")} · ${d ? brandName(d.brand) : ""} ${esc(mo ? mo.name : c.mod)}</div><div class="meta">${esc(mLong(c.k))}</div></div><div class="amt">${c.n} sold<small>no price</small></div></div>`; }).join("")}</div>` : "";
+  }
+
+  /* ---------- SUMMARY ---------- */
+  document.querySelectorAll("#period button").forEach(b => b.addEventListener("click", () => {
+    const go = () => { S.period = b.dataset.p; ls.set("fh2-period", S.period); S.day = todayStr(); renderSummary(); };
+    if (b.dataset.p !== "day" && !S.unlocked) askUnlock(go); else go(); }));
+  $("#pPrev").addEventListener("click", () => { S.day = dAdd(S.day, S.period==="week" ? -7 : -1); renderSummary(); });
+  $("#pNext").addEventListener("click", () => { const t = todayStr(), nx = dAdd(S.day, S.period==="week" ? 7 : 1);
+    if (S.period==="day" ? nx <= t : weekStart(nx) <= weekStart(t)) { S.day = nx > t ? t : nx; renderSummary(); } });
+  function dailyChart(dates, highlight){
+    const vals = dates.map(dt => rangeTotals([dt]));
+    const max = Math.max(1, ...vals.map(v => v.rev)); const W=900,H=230,L=50,R=8,T=12,B=28, cw=(W-L-R)/dates.length, y=v=>T+(H-T-B)*(1-v/max);
+    const step = nice(max/4); let g="";
+    for (let v=0; v<=max+1e-9; v+=step) g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${short(v)}</text>`;
+    const every = dates.length > 16 ? 5 : 1;
+    dates.forEach((dt,i) => { const v = vals[i].rev, x = L+i*cw+cw*0.18, w = cw*0.64;
+      if (v>0) g+=`<rect x="${x}" y="${y(v)}" width="${w}" height="${H-B-y(v)}" rx="3" fill="${highlight.includes(dt)?"var(--accent)":"var(--violet)"}" opacity="${highlight.includes(dt)?1:.55}"><title>${dNice(dt)}: ${ksh(v)} · ${vals[i].units} case${vals[i].units===1?"":"s"}</title></rect>`;
+      const day = Number(dt.slice(8)); const lab = dates.length<=7 ? dNice(dt,{weekday:"short"}) : (dates.length<=16 ? String(day) : (day===1||day%every===0 ? String(day) : ""));
+      if (lab) g+=`<text x="${L+i*cw+cw/2}" y="${H-10}" text-anchor="middle" font-size="10.5" fill="${highlight.includes(dt)?"var(--accent)":"var(--muted)"}" font-weight="${highlight.includes(dt)?700:400}">${lab}</text>`; });
+    $("#dailyChart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sales per day">${g}</svg>`;
+  }
+  function renderSummary(){
+    memo = {};
+    const m = S.month, t = monthTotals(m);
+    const now = new Date(), hr = now.getHours(), cur = m === thisMonth();
+    $("#hDate").textContent = now.toLocaleDateString("en-GB", { weekday:"long", day:"numeric", month:"long" });
+    $("#hHello").textContent = (hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening") + (S.myName ? ", " + S.myName.split(" ")[0] : "");
+    $("#heroLabel").textContent = "What you earned · " + mLong(m);
+    $("#heroBig").textContent = ksh(t.net);
+    $("#heroNote").textContent = t.units ? `${t.units} case${t.units===1?"":"s"} sold${cur?" so far this month":""}. This is after the cost of cases and all bills.` : (cur ? "No sales recorded yet this month. Tap “Record a sale” to start." : "No sales were recorded in this month.");
+    $("#heroFlow").innerHTML = [["Sales", t.rev, ""],["Cost of cases", -t.cost, ""],["Bills", -t.bills, ""],["Earned", t.net, ""]]
+      .map(([l,v]) => `<div><span>${l}</span><b>${v<0?"− ":""}${ksh(Math.abs(v))}</b></div>`).join("");
+    const margin = t.rev ? Math.round(t.gross/t.rev*100) : 0, lowN = lowCount(m);
+    $("#sumTiles").innerHTML = [
+      ["Cases sold", t.units.toLocaleString(), "this month", "var(--accent)"],
+      ["Profit on cases", ksh(t.gross), margin + "% of sales", "var(--good)", 1],
+      ["Bills", ksh(t.bills), "staff, rent, other", "var(--violet)", 1],
+      ["Cases in stock", totalLeft(m).toLocaleString(), "left at month end", "var(--plum-2)"],
+      ["Running low", String(lowN), lowN === 1 ? "model with 2 or fewer" : "models with 2 or fewer", "var(--warn)"]]
+      .map(([l,v,sub,tone,mon]) => `<div class="tile${mon?" money":""}" style="--tone:${tone}"><span class="eyebrow">${l}</span><span class="v">${v}</span><span class="sub">${sub}</span></div>`).join("");
+    const top = S.designs.map(d => ({ d, q: soldOf(m, d.id) })).filter(x => x.q > 0).sort((a,b) => b.q - a.q).slice(0, 5);
+    const tmax = top.length ? top[0].q : 1;
+    $("#homeTop").innerHTML = top.length ? top.map((x,i) => `<div class="tp">${picTag(x.d)}<div class="info"><div class="nm"><span class="no">${esc(x.d.no)}</span> · ${esc(x.d.name)}</div><div class="meter"><i style="width:${Math.max(6, x.q/tmax*100)}%"></i></div></div><span class="q">${x.q} sold</span></div>`).join("")
+      : `<div class="empty">Your best sellers will show here once you record sales.</div>`;
+    const low = [];
+    S.designs.forEach(d => modelsOf(d.brand).forEach(mo => { if (stocked(m, d.id, mo.id)) { const lf = leftOf(m, d.id, mo.id); if (lf <= 2) low.push({ d, mo, lf, q: soldOf(m, d.id) }); } }));
+    low.sort((a,b) => b.q - a.q || a.lf - b.lf);
+    $("#homeLow").innerHTML = low.length ? low.slice(0, 5).map(x => `<div class="tp">${picTag(x.d)}<div class="info"><div class="nm"><span class="no">${esc(x.d.no)}</span> · ${esc(x.d.name)}</div><div class="muted" style="font-size:.8rem">${esc(x.mo.name)}</div></div><span class="lowchips" style="margin:0"><span class="${x.lf<=0?"out":""}">${x.lf<=0?"Sold out":x.lf+" left"}</span></span></div>`).join("") + (low.length > 5 ? `<div class="muted" style="font-size:.82rem">+ ${low.length-5} more on the Restock list</div>` : "")
+      : `<div class="empty">Nothing is running low.</div>`;
+    const ms = [5,4,3,2,1,0].map(k => shift(m, -k)); const rows = ms.map(x => ({ m:x, ...monthTotals(x) }));
+    $("#sumTable").innerHTML = `<table class="t"><thead><tr><th>Month</th><th class="r">Sold</th><th class="r">Sales</th><th class="r">Profit on cases</th><th class="r">Staff</th><th class="r">Rent</th><th class="r">Misc.</th><th class="r">Earned</th></tr></thead><tbody>${
+      rows.slice().reverse().map(r => `<tr${r.m===m?' style="font-weight:700"':""}><td>${esc(mLong(r.m))}</td><td class="r num">${r.units}</td><td class="r num">${ksh(r.rev)}</td><td class="r num">${ksh(r.gross)}</td><td class="r num">${ksh(r.cats["Staff payment"])}</td><td class="r num">${ksh(r.cats["Rent"])}</td><td class="r num">${ksh(r.cats["Miscellaneous"])}</td><td class="r num" style="color:${r.net<0?"var(--bad)":"var(--good)"}">${ksh(r.net)}</td></tr>`).join("")
+    }</tbody></table>`;
+    // chart: sales vs earned bars
+    const max = Math.max(1, ...rows.map(r => Math.max(r.rev, r.net, 0))), minv = Math.min(0, ...rows.map(r => r.net));
+    const W=600,H=220,L=56,R=8,T=12,B=26, span = max - minv, y = v => T + (H-T-B)*(1-(v-minv)/span), cw=(W-L-R)/rows.length;
+    let g=""; const step = nice(span/4);
+    for (let v=Math.ceil(minv/step)*step; v<=max+1e-9; v+=step) g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${short(v)}</text>`;
+    rows.forEach((r,i) => { const x=L+i*cw; const bw=cw*0.32;
+      g+=`<rect x="${x+cw*0.16}" y="${Math.min(y(r.rev),y(0))}" width="${bw}" height="${Math.abs(y(0)-y(r.rev))}" rx="2" fill="var(--violet)" opacity=".55"><title>Sales ${ksh(r.rev)}</title></rect>`;
+      g+=`<rect x="${x+cw*0.16+bw+2}" y="${Math.min(y(r.net),y(0))}" width="${bw}" height="${Math.abs(y(0)-y(r.net))}" rx="2" fill="${r.net<0?"var(--bad)":"var(--accent)"}"><title>Earned ${ksh(r.net)}</title></rect>`;
+      g+=`<text x="${x+cw/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--muted)">${mShort(r.m)}</text>`; });
+    $("#sumChart").innerHTML = `<div class="legend" style="margin-bottom:4px"><span><i class="sw" style="background:var(--violet);opacity:.55"></i>Sales</span><span><i class="sw" style="background:var(--accent)"></i>What you earned</span></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sales and earnings for the last six months">${g}</svg>`;
+    renderPeriod();
+  }
+  function saleEntries(dates){
+    const out = [];
+    dates.forEach(dt => {
+      const day = S.days[dt] || {}, log = day.log || {}, sales = day.sales || {}, amt = day.amt || {}, amtq = day.amtq || {};
+      const got = {};
+      for (const id in log) { const e = log[id]; if (!e || e.void) continue; const k = e.d+"|"+e.mod; got[k] = got[k] || { q:0, a:0 }; got[k].q += N(e.qty); got[k].a += N(e.qty)*N(e.each); if (N(e.qty) > 0) out.push({ ...e, id, date: dt }); }
+      // sales saved before the sales list existed: show them as one editable line per case and model
+      for (const d in sales) for (const mod in sales[d]) {
+        const q = N(sales[d][mod]), k = d+"|"+mod, g = got[k] || { q:0, a:0 }, miss = q - g.q;
+        if (miss <= 0) continue;
+        const aq = N((amtq[d]||{})[mod]), a = N((amt[d]||{})[mod]), rq = Math.min(q, aq), list = priceOf(dt.slice(0,7), d).sell;
+        const rev = (aq ? a*rq/aq : 0) + (q-rq)*list;
+        out.push({ id: "old_"+d+"_"+mod, d, mod, qty: miss, each: Math.max(0, Math.round((rev - g.a)/miss)), ts: dParse(dt).getTime() + 1, notime: true, date: dt });
+      }
+    });
+    return out.sort((a,b) => N(b.ts) - N(a.ts));
+  }
+  function renderLog(sel, dates, limit){
+    const el = $(sel); if (!el) return;
+    const list = saleEntries(dates); const many = dates.length > 1;
+    if (!list.length){ el.innerHTML = `<div class="empty">No sales recorded ${many ? "in this period" : "on this day"} yet.</div>`; return; }
+    const show = list.slice(0, limit || 60);
+    el.innerHTML = show.map(e => { const d = S.designs.find(x => x.id===e.d) || { no:"?", name:"Removed case" };
+      const mn = (modelsOf(d.brand||"iphone").find(x => x.id===e.mod) || {}).name || "";
+      const t = new Date(N(e.ts)); const when = (many ? dNice(e.date, {weekday:"short", day:"numeric", month:"short"}) + " · " : "") + (e.notime ? "time not recorded" : pad(t.getHours()) + ":" + pad(t.getMinutes()));
+      return `<div class="sl">${picTag(d)}<div class="info"><div class="nm"><span class="no">${esc(d.no)}</span> · ${esc(d.name)}${e.edited?'<span class="edited">Edited</span>':""}</div><div class="meta">${e.note ? esc(e.note) + " · " : ""}${esc(mn)} · ${esc(when)} · <b style="color:${chCol(e.ch)}">${esc(chName(e.ch))}</b></div></div>
+        <div class="amt">${ksh(N(e.qty)*N(e.each))}<small>${N(e.qty)} × ${ksh(e.each)}</small></div><button class="btn ghost small" data-edit="${esc(e.date)}|${esc(e.id)}">Edit</button></div>`; }).join("")
+      + (list.length > show.length ? `<div class="muted" style="font-size:.82rem;padding-top:8px">Showing the latest ${show.length} of ${list.length} sales.</div>` : "");
+  }
+  document.addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if (!b) return; const [dt, id] = b.dataset.edit.split("|"); openEdit(dt, id); });
+  function openEdit(date, sid){
+    let e0 = ((S.days[date] || {}).log || {})[sid];
+    if (!e0) { const f = saleEntries([date]).find(x => x.id === sid); if (!f) return; const { id, date: _d, ...rest } = f; e0 = rest; }
+    const d = S.designs.find(x => x.id===e0.d) || { no:"?", name:"Removed case", brand:"iphone" };
+    const mn = (modelsOf(d.brand).find(x => x.id===e0.mod) || {}).name || "";
+    let qty = N(e0.qty), price = String(N(e0.each)), confirmDel = false, ch = e0.ch || null;
+    const box = document.createElement("div"); box.className="sheet"; box.setAttribute("role","dialog"); box.setAttribute("aria-modal","true"); box.setAttribute("aria-label","Edit sale");
+    box.innerHTML = `<div class="box"></div>`; document.body.appendChild(box); sheetEl = box;
+    const close = () => { box.remove(); sheetEl=null; document.removeEventListener("keydown", onKey); };
+    const onKey = ev => { if (ev.key==="Escape") close(); }; document.addEventListener("keydown", onKey);
+    box.addEventListener("click", ev => { if (ev.target===box) close(); });
+    const t = new Date(N(e0.ts));
+    const draw = () => {
+      box.firstElementChild.innerHTML = `
+        <div class="row" style="gap:14px;align-items:flex-start">
+          ${picTag(d).replace('class="pic"','class="pic" style="width:70px;height:94px"')}
+          <div style="flex:1;min-width:0"><div class="eyebrow">Edit sale</div><div style="font-weight:700"><span class="no">${esc(d.no)}</span> · ${esc(d.name)}</div>
+            <div class="muted" style="font-size:.85rem">${esc(mn)} · ${esc(dNice(date, {weekday:"long", day:"numeric", month:"short"}))}${e0.notime ? "" : " at " + pad(t.getHours()) + ":" + pad(t.getMinutes())}</div>
+            <div class="muted" style="font-size:.85rem">Was ${N(e0.qty)} × ${ksh(e0.each)} = ${ksh(N(e0.qty)*N(e0.each))}</div></div>
+          <button class="btn ghost small" data-x="close">Close</button>
+        </div>
+        <div class="row" style="align-items:flex-end;gap:16px">
+          <div><div class="eyebrow" style="margin-bottom:6px">How many</div><span class="stepper"><button data-x="minus" aria-label="One less">−</button><span>${qty}</span><button data-x="plus" aria-label="One more">+</button></span></div>
+          <label class="f" style="flex:1;min-width:160px">Sold at (KSh each)<input type="number" min="0" inputmode="numeric" id="editPrice" value="${esc(price)}" style="font-size:1.15rem;font-family:var(--f-num);font-weight:600;padding:10px 12px"></label>
+        </div>
+        <div class="muted" id="editTotal" style="font-size:.88rem;margin-top:-6px">New total: <b>${ksh(qty*N(price))}</b></div>
+        ${chPicker(ch)}
+        <div class="row"><button class="btn" data-x="save" style="padding:13px 20px">Save changes</button>
+          ${confirmDel ? `<button class="btn danger" data-x="delyes">Yes, delete this sale</button><button class="btn ghost" data-x="delno">Keep it</button>` : `<button class="btn ghost" data-x="del">Delete sale</button>`}</div>
+        <div class="muted" style="font-size:.8rem">Deleting puts the case${N(e0.qty)>1?"s":""} back into stock.</div>
+        <div class="msg" id="editMsg"></div>`;
+    };
+    box.addEventListener("input", ev => { if (ev.target.id!=="editPrice") return; price = ev.target.value; $("#editTotal").innerHTML = `New total: <b>${ksh(qty*N(price))}</b>`; });
+    const apply = async (q2, p2, del) => {
+      const m = date.slice(0,7), dq = q2 - N(e0.qty), damt = q2*p2 - N(e0.qty)*N(e0.each);
+      const c = cell(m, e0.d, e0.mod);
+      await writeMany(m, e0.d, { [e0.mod]: { sold: Math.max(0, N(c.sold) + dq), rev: Math.max(0, N(c.rev) + damt), revq: Math.max(0, N(c.revq) + dq) } }, null);
+      await logDay(date, e0.d, e0.mod, dq, damt, del ? { ...e0, void: true, edited: Date.now() } : { ...e0, qty: q2, each: p2, ch: ch || null, edited: Date.now() }, sid);
+    };
+    box.addEventListener("click", async ev => {
+      const b = ev.target.closest("button"); if (!b || !box.contains(b)) return;
+      if (b.dataset.ch){ ch = b.dataset.ch; draw(); return; }
+      const x = b.dataset.x, msg = () => $("#editMsg");
+      if (x==="close") return close();
+      if (x==="minus"){ qty = Math.max(1, qty-1); draw(); return; }
+      if (x==="plus"){ qty++; draw(); return; }
+      if (x==="del"){ confirmDel = true; draw(); return; }
+      if (x==="delno"){ confirmDel = false; draw(); return; }
+      if (x==="save" || x==="delyes"){
+        if (!S.db){ msg().className="msg err"; msg().textContent="Not connected. Open this page signed in to claude.ai."; return; }
+        if (x==="save" && (price==="" || N(price) < 0)){ msg().className="msg err"; msg().textContent="Type the price it was sold at."; return; }
+        const p2 = Math.round(N(price));
+        if (x==="save" && qty===N(e0.qty) && p2===N(e0.each) && (ch||null)===(e0.ch||null)){ close(); return; }
+        b.disabled = true;
+        try { await apply(x==="delyes" ? 0 : qty, p2, x==="delyes"); close(); toast(x==="delyes" ? `Sale deleted. Case ${d.no} is back in stock.` : `Sale updated: ${qty} × ${ksh(p2)} = ${ksh(qty*p2)}`); }
+        catch(err){ b.disabled = false; msg().className="msg err"; msg().textContent = "Could not save. " + (err && err.message || "Check your connection."); }
+      }
+    });
+    draw(); box.querySelector("button")?.focus();
+  }
+  function renderChannels(dates, label){
+    const list = saleEntries(dates); const agg = {}; let tot = 0;
+    list.forEach(e => { const k = e.ch || "none"; agg[k] = agg[k] || { q:0, a:0, n:0 }; agg[k].q += N(e.qty); agg[k].a += N(e.qty)*N(e.each); agg[k].n++; tot += N(e.qty)*N(e.each); });
+    const rows = CHANNELS.map(c => ({ id:c.id, name:c.name, col:c.col, ...(agg[c.id] || { q:0, a:0, n:0 }) }));
+    if (agg.none) rows.push({ id:"none", name:"Not recorded", col:"var(--zero)", ...agg.none });
+    $("#chanTitle").textContent = "Where sales came from · " + label;
+    $("#chanBox").innerHTML = rows.map(r => { const pct = tot ? Math.round(r.a/tot*100) : 0;
+      return `<div class="chan"><div class="nm"><i style="background:${r.col}"></i>${esc(r.name)}</div><div class="v">${ksh(r.a)}</div><div class="sub">${r.q} case${r.q===1?"":"s"} · ${pct}% of sales</div><div class="meter"><i style="width:${Math.max(r.a?4:0,pct)}%;background:${r.col}"></i></div></div>`; }).join("")
+      + (agg.none ? `<div class="muted" style="font-size:.78rem;grid-column:1/-1">"Not recorded" are sales made before this option was added. Press Edit on a sale in the list below to set where it came from.</div>` : "");
+  }
+  function renderPeriod(){
+    const P = S.period;
+    document.querySelectorAll("#period button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p===P));
+    $("#pnav").hidden = P === "month";
+    const today = todayStr();
+    if (P === "month"){
+      const [y,mo] = S.month.split("-").map(Number); const n = new Date(y, mo, 0).getDate();
+      const dates = Array.from({length:n}, (_,i) => S.month+"-"+pad(i+1));
+      $("#dailyTitle").textContent = "Sales per day · " + mLong(S.month); $("#dailySub").textContent = "Sales recorded each day (KSh)";
+      dailyChart(dates, [today]); $("#topTitle").textContent = "Most preferred this month";
+      $("#logTitle").textContent = "Sales list · " + mLong(S.month); renderLog("#saleLog", dates, 80); renderChannels(dates, mLong(S.month)); return;
+    }
+    let dates, label, title;
+    if (P === "day"){ dates = [S.day]; label = S.day===today ? "Today" : S.day===dAdd(today,-1) ? "Yesterday" : dNice(S.day); title = S.day===today ? "Sold today" : "Sold on " + dNice(S.day, {weekday:"long", day:"numeric", month:"short"}); }
+    else { const ws = weekStart(S.day); dates = Array.from({length:7}, (_,i) => dAdd(ws, i)); label = ws===weekStart(today) ? "This week" : dNice(ws,{day:"numeric",month:"short"})+" – "+dNice(dates[6],{day:"numeric",month:"short"}); title = ws===weekStart(today) ? "Sold this week" : "Sold in the week of " + dNice(ws,{day:"numeric",month:"short"}); }
+    $("#pLabel").textContent = label;
+    $("#pNext").disabled = P==="day" ? S.day >= today : weekStart(S.day) >= weekStart(today);
+    $("#pNext").style.opacity = $("#pNext").disabled ? .35 : 1;
+    const t = rangeTotals(dates);
+    $("#logTitle").textContent = P==="day" ? (S.day===today ? "Today's sales" : "Sales on " + dNice(S.day)) : "Sales this week"; renderLog("#saleLog", dates, 80);
+    renderChannels(dates, P==="day" ? (S.day===today ? "Today" : dNice(S.day)) : "This week");
+    $("#heroLabel").textContent = title;
+    $("#heroBig").textContent = ksh(t.rev);
+    $("#heroNote").textContent = t.units ? `${t.units} case${t.units===1?"":"s"} sold. Profit on these cases: ${ksh(t.gross)}. Bills are counted once a month, under This month.` : (P==="day" ? "No sales recorded on this day yet." : "No sales recorded in this week yet.");
+    $("#heroFlow").innerHTML = [["Sales", t.rev],["Cost of cases", -t.cost],["Profit on cases", t.gross],["Cases sold", null, t.units]]
+      .map(([l,v,u]) => `<div><span>${l}</span><b>${v===null ? u : (v<0?"− ":"")+ksh(Math.abs(v))}</b></div>`).join("");
+    if (P === "day"){ const end = S.day; const ds = Array.from({length:14}, (_,i) => dAdd(end, i-13)); $("#dailyTitle").textContent = "Last 14 days"; $("#dailySub").textContent = "Sales each day (KSh)"; dailyChart(ds, [S.day]); }
+    else { $("#dailyTitle").textContent = "This week day by day"; $("#dailySub").textContent = "Monday to Sunday (KSh)"; dailyChart(dates, dates.includes(today) ? [today] : []); }
+    // what sold
+    const agg = {}; t.lines.forEach(l => { const k = l.d+"|"+l.mod; agg[k] = agg[k] || { d:l.d, mod:l.mod, q:0, rev:0 }; agg[k].q += l.q; agg[k].rev += l.rev; });
+    const rows = Object.values(agg).sort((a,b) => b.q - a.q || b.rev - a.rev);
+    const mx = rows.length ? rows[0].q : 1;
+    $("#topTitle").textContent = title;
+    $("#homeTop").innerHTML = rows.length ? rows.slice(0, 8).map(r => { const d = S.designs.find(x => x.id===r.d) || { no:"?", name:"Removed case" }; const mn = (modelsOf(d.brand||"iphone").find(x=>x.id===r.mod)||{}).name || "";
+        return `<div class="tp">${picTag(d)}<div class="info"><div class="nm"><span class="no">${esc(d.no)}</span> · ${esc(d.name)} <span class="muted" style="font-weight:500">· ${esc(mn)}</span></div><div class="meter"><i style="width:${Math.max(6, r.q/mx*100)}%"></i></div></div><span class="q">${r.q} · ${ksh(r.rev)}</span></div>`; }).join("") + (rows.length > 8 ? `<div class="muted" style="font-size:.82rem">+ ${rows.length-8} more</div>` : "")
+      : `<div class="empty">${P==="day" ? "Nothing sold on this day yet." : "Nothing sold this week yet."} Sales recorded on the Sell screen show here.</div>`;
+  }
+  const nice = r => { const p=Math.pow(10,Math.floor(Math.log10(r||1))), n=r/p; return (n<=1?1:n<=2?2:n<=5?5:10)*p; };
+  function lowCount(m){ let n=0; S.designs.forEach(d => modelsOf(d.brand).forEach(mo => { if (stocked(m, d.id, mo.id) && leftOf(m, d.id, mo.id) <= 2) n++; })); return n; }
+  const short = v => Math.abs(v)>=1e6 ? (v/1e6).toFixed(1).replace(/\.0$/,"")+"M" : Math.abs(v)>=1000 ? (v/1000).toFixed(1).replace(/\.0$/,"")+"k" : String(Math.round(v));
+
+  /* ---------- BILLS ---------- */
+  $("#bDate").value = todayStr();
+  $("#billForm").addEventListener("submit", async e => {
+    e.preventDefault(); const msg=$("#billMsg");
+    if (!S.db){ msg.className="msg err"; msg.textContent="Not connected. Open this page signed in to claude.ai."; return; }
+    const date=$("#bDate").value, amount=N($("#bAmt").value), category=$("#bCat").value, note=$("#bNote").value.trim();
+    if (!date || amount<=0){ msg.className="msg err"; msg.textContent="Enter the date and the amount."; return; }
+    try { await S.db.collection("bills").add({ date, month: date.slice(0,7), category, amount, note, ts: Date.now() });
+      msg.className="msg ok"; msg.textContent=`Saved ${category.toLowerCase()} of ${ksh(amount)}.`; $("#bAmt").value=""; $("#bNote").value=""; }
+    catch(err){ msg.className="msg err"; msg.textContent="Could not save. "+(err&&err.message||""); }
+  });
+  function renderBills(){
+    const m=S.month, t=monthTotals(m); $("#billsTitle").textContent = "Bills · " + mLong(m);
+    $("#billTiles").innerHTML = Object.entries(t.cats).map(([c,a]) => `<div class="tile"><span class="eyebrow">${esc(c)}</span><span class="v">${ksh(a)}</span></div>`).join("") + `<div class="tile hero"><span class="eyebrow">All bills</span><span class="v">${ksh(t.bills)}</span></div>`;
+    const rows = S.bills.filter(b => b.month===m).sort((a,b) => (b.date+b.ts) > (a.date+a.ts) ? 1 : -1);
+    $("#billList").innerHTML = rows.length ? `<div class="tscroll"><table class="t"><thead><tr><th>Date</th><th>Type</th><th>Details</th><th class="r">Amount</th><th></th></tr></thead><tbody>${
+      rows.map(b => `<tr><td class="num">${esc(b.date.slice(8))}/${esc(b.date.slice(5,7))}</td><td>${esc(b.category)}</td><td class="wrapc">${esc(b.note||"")}</td><td class="r num">${ksh(b.amount)}</td><td class="r" data-bill="${esc(b._id)}"><button class="btn ghost small" data-ask>Remove</button></td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="panel empty">No bills for ${esc(mLong(m))} yet.</div>`;
+  }
+  $("#billList").addEventListener("click", async e => {
+    const cellEl = e.target.closest("[data-bill]"); if(!cellEl) return;
+    if (e.target.closest("[data-ask]")) { cellEl.innerHTML = `<button class="btn danger small" data-yes>Remove</button> <button class="btn ghost small" data-no>Keep</button>`; return; }
+    if (e.target.closest("[data-no]")) { cellEl.innerHTML = `<button class="btn ghost small" data-ask>Remove</button>`; return; }
+    if (e.target.closest("[data-yes]") && S.db) { try { await S.db.doc("bills/"+cellEl.dataset.bill).delete(); } catch(err){ banner("Could not remove the bill.", "bad"); } }
+  });
+
+  /* ---------- DESIGNS ---------- */
+  function renderDesigns(){
+    $("#addPanel").hidden = !S.assets;
+    $("#dRows").innerHTML = S.designs.map(d => `<tr><td class="no" style="font-size:1.1rem">${esc(d.no)}</td><td>${picTag(d)}</td><td class="wrapc">${esc(d.name)}</td><td>${brandName(d.brand)}</td>
+      <td class="r" data-des="${esc(d.id)}">${S.assets?'<button class="btn ghost small" data-ask>Remove</button>':""}</td></tr>`).join("");
+  }
+  $("#dRows").addEventListener("click", async e => {
+    const c = e.target.closest("[data-des]"); if(!c) return;
+    if (e.target.closest("[data-ask]")) { c.innerHTML = `<button class="btn danger small" data-yes>Remove case</button> <button class="btn ghost small" data-no>Keep</button>`; return; }
+    if (e.target.closest("[data-no]")) { c.innerHTML = `<button class="btn ghost small" data-ask>Remove</button>`; return; }
+    if (e.target.closest("[data-yes]") && S.db) { try { await S.db.doc("designs/"+c.dataset.des).delete(); } catch(err){ banner("Could not remove the case.", "bad"); } }
+  });
+  $("#addForm").addEventListener("submit", async e => {
+    e.preventDefault(); const msg=$("#aMsg");
+    const file=$("#aPhoto").files[0], name=$("#aName").value.trim(), brand=$("#aBrand").value;
+    if (!file || !name || !S.assets || !S.db) return;
+    $("#aBtn").disabled=true; msg.className="msg"; msg.textContent="Uploading photo…";
+    try {
+      const small = await shrink(file);
+      const up = await S.assets.upload(small, { type: "image/jpeg" });
+      const same = designsOf(brand); const maxNo = same.reduce((a,d) => Math.max(a, N(String(d.no).replace(/\D/g,""))), 0);
+      const no = (brand==="samsung"?"S":"") + (maxNo+1);
+      const order = S.designs.reduce((a,d)=>Math.max(a,N(d.order)),0)+1;
+      await S.db.collection("designs").add({ no, name, brand, order, photo: up.id });
+      msg.className="msg ok"; msg.textContent=`Added as case ${no}.`; $("#addForm").reset();
+    } catch(err){ msg.className="msg err"; msg.textContent="Could not add. "+(err&&err.message||""); }
+    $("#aBtn").disabled=false;
+  });
+  function shrink(file){
+    return new Promise((res, rej) => { const img=new Image(); img.onload=()=>{ const s=Math.min(1, 360/Math.max(img.width,img.height)); const c=document.createElement("canvas"); c.width=Math.round(img.width*s); c.height=Math.round(img.height*s); c.getContext("2d").drawImage(img,0,0,c.width,c.height); c.toBlob(b=>b?res(b):rej(new Error("Could not read the photo")),"image/jpeg",0.85); }; img.onerror=()=>rej(new Error("Could not read the photo")); img.src=URL.createObjectURL(file); });
+  }
+
+  /* ---------- BACKUP ---------- */
+  let DL = null;
+  function backupNote(){ const t = ls.get("fh2-backup"); const el = $("#backupNote"); if (el && t) el.textContent = "Last backup on this device: " + new Date(Number(t)).toLocaleString("en-GB", {day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"}) + ". Do it once a week."; }
+  async function backup(btn){
+    if (!S.db) { banner("Not connected. Open this page signed in to claude.ai.", "bad"); return; }
+    if (!DL || typeof XLSX === "undefined") { banner("Downloading a backup isn't available here. Open Fasmie Hub in claude.ai on a phone or computer.", "bad"); return; }
+    btn.disabled = true; memo = {};
+    try {
+      const end = [thisMonth(), ...monthKeys()].sort().pop();
+      const months = []; for (let m = earliest(); m <= end && months.length < 240; m = shift(m, 1)) months.push(m);
+      const wb = XLSX.utils.book_new();
+      const sum = [["Month","Cases sold","Sales (KSh)","Cost of cases (KSh)","Profit on cases (KSh)","Staff payment","Rent","Miscellaneous","All bills","What you earned (KSh)","Cases left"]];
+      months.forEach(m => { const t = monthTotals(m); sum.push([mLong(m), t.units, t.rev, t.cost, t.gross, t.cats["Staff payment"], t.cats["Rent"], t.cats["Miscellaneous"], t.bills, t.net, totalLeft(m)]); });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), "Summary");
+      months.forEach(m => {
+        const rows = [["No.","Design","For","Phone model","Start","Added","Sold","Left","Bought at","Sells at","Sales (KSh)","Profit (KSh)"]];
+        S.designs.forEach(d => { const p = priceOf(m, d.id); modelsOf(d.brand).forEach(mo => {
+          const c = cell(m, d.id, mo.id), st = startOf(m, d.id, mo.id), ad = N(c.added), so = N(c.sold), lf = leftOf(m, d.id, mo.id);
+          if (st || ad || so || lf) rows.push([d.no, d.name, brandName(d.brand), mo.name, st, ad, so, lf, p.buy, p.sell, cellRev(m, d.id, mo.id, p.sell), cellRev(m, d.id, mo.id, p.sell)-so*p.buy]);
+        }); });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), mShort(m) + " " + m.slice(0,4));
+      });
+      const br = [["Date","Type","Details","Amount (KSh)"]];
+      S.bills.slice().sort((a,b) => a.date > b.date ? 1 : -1).forEach(b => br.push([b.date, b.category, b.note || "", N(b.amount)]));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(br), "Bills");
+      const dl = [["Date","No.","Design","Phone model","Cases sold","Sales (KSh)","Profit (KSh)"]];
+      Object.keys(S.days).sort().forEach(dt => dayLines(dt).forEach(l => { const ds = S.designs.find(x => x.id===l.d) || {}; dl.push([dt, ds.no||"", ds.name||"", (modelsOf(ds.brand||"iphone").find(x=>x.id===l.mod)||{}).name||l.mod, l.q, l.rev, l.rev-l.cost]); }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dl), "Daily sales");
+      const sl = [["Date","No.","Design","Phone model","How many","Price each (KSh)","Total (KSh)","Came from","Description"]];
+      saleEntries(Object.keys(S.days).sort()).sort((a,b) => N(a.ts)-N(b.ts)).forEach(e => { const ds = S.designs.find(x => x.id===e.d) || {}; sl.push([e.date, ds.no||"", ds.name||"", (modelsOf(ds.brand||"iphone").find(x=>x.id===e.mod)||{}).name||e.mod, N(e.qty), N(e.each), N(e.qty)*N(e.each), chName(e.ch), e.note||""]); });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sl), "Sales list");
+      const dr = [["No.","Design","For"]]; S.designs.forEach(d => dr.push([d.no, d.name, brandName(d.brand)]));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dr), "Designs");
+      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      await DL.save({ filename: "Fasmie Hub backup " + todayStr() + ".xlsx", data: new Uint8Array(out) });
+      ls.set("fh2-backup", String(Date.now())); backupNote(); toast("Backup saved to this device.");
+    } catch (err) {
+      if (err && err.code === "declined") toast("Backup cancelled.");
+      else banner("Could not save the backup. " + (err && err.message || "Try again."), "bad");
+    }
+    btn.disabled = false;
+  }
+  ["#backupBtn", "#backupBtn2"].forEach(id => $(id).addEventListener("click", e => backup(e.currentTarget)));
+  backupNote();
+
+  /* ---------- boot ---------- */
+  showTab(location.hash && TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : S.tab);
+  (async () => {
+    const C = window.claude;
+    const [db, user, assets] = C && C.use ? await Promise.all([C.use("db"), C.use("user"), C.use("assets")]) : [null,null,null];
+    if (!db){ banner("Open Fasmie Hub signed in to claude.ai to see and save your stock. If you were sent this link, sign in with the email it was shared to."); return; }
+    S.db = db; S.assets = assets;
+    C.use("downloads").then(d => { DL = d; if (!d) { $("#backupBtn").hidden = true; $("#backupBtn2").hidden = true; } });
+    if (user){ const me = await user.me(); const w=$("#who"); w.innerHTML=""; const im=document.createElement("img"); im.src=me.avatarUrl; im.alt=""; S.myName = me.name || ""; const sp=document.createElement("span"); sp.textContent=me.name ? "Signed in as " + me.name : "Phone cases · KSh"; w.append(im, sp); }
+    let firstDesigns = true;
+    db.collection("designs").onSnapshot(snap => {
+      S.designs = snap.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b) => (a.brand===b.brand ? N(a.order)-N(b.order) : a.brand==="iphone" ? -1 : 1));
+      if (firstDesigns && sheetEl==null){ firstDesigns=false; } render();
+    }, () => banner("Lost the connection. Reload the page.", "bad"));
+    db.doc("config/models").onSnapshot(snap => { const v = snap.exists ? snap.data() : {}; S.models = { ...v, iphone: v.iphone||[], samsung: v.samsung||[] }; gridKey=""; render(); }, () => {});
+    db.collection("months").onSnapshot(snap => { S.months = {}; snap.docs.forEach(d => S.months[d.id] = d.data()); render(); }, () => banner("Lost the connection to your stock. Reload the page.", "bad"));
+    db.collection("days").onSnapshot(snap => { S.days = {}; snap.docs.forEach(d => { S.days[d.id] = JSON.parse(JSON.stringify(d.data())); EXISTS["d"+d.id] = true; }); render(); }, () => {});
+    db.collection("bills").onSnapshot(snap => { S.bills = snap.docs.map(d => ({ _id:d.id, ...d.data() })); render(); }, () => {});
+  })();
+})();
+</script>
+
+</body></html>
